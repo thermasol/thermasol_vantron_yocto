@@ -1,0 +1,13 @@
+[Unit]
+Description=watch dog service
+After=network.target
+
+[Service]
+User=root
+Restart=always
+RestartSec=30
+Type=simple
+ExecStart=/usr/bin/hardwatchdog.sh
+
+[Install]
+WantedBy=multi-user.target

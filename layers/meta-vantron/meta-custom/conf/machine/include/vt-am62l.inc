@@ -1,0 +1,104 @@
+IMAGE_FSTYPES += "tar.xz.md5sum"
+
+# Extra boot files for WIC images
+do_image_wic[depends] += "tisdk-uenv:do_deploy"
+IMAGE_BOOT_FILES += "uEnv.txt"
+
+# Mask any broken recipes (currently none)
+#BBMASK = ""
+
+TCMODEAPPEND ?= "-${TCMODE}"
+TMPDIR .= "${TCMODEAPPEND}"
+
+# Start with default set of distro features
+DISTRO_FEATURES = "${DISTRO_FEATURES_DEFAULT} ${DISTRO_FEATURES_LIBC}"
+
+# Add additional distro features
+DISTRO_FEATURES:append = " pam wayland opengl"
+DISTRO_FEATURES:remove = "x11"
+DISTRO_FEATURES:append = " opencl"
+DISTRO_FEATURES:append = " vulkan"
+
+# Normally target distro features will not be applied to native builds:
+# Native distro features on this list will use the target feature value
+DISTRO_FEATURES_FILTER_NATIVE:append = " opencl"
+DISTRO_FEATURES_FILTER_NATIVESDK:append = " opencl"
+
+# Set global runtime providers for major components
+ARAGO_SYSVINIT ??= "0"
+INIT_MANAGER ?= "${@['systemd','sysvinit'][int(d.getVar('ARAGO_SYSVINIT'))]}"
+
+# Distro-specific package configuration
+PACKAGECONFIG:append:pn-systemd = " coredump networkd resolved serial-getty-generator"
+
+# Prefer OpenSSL over GnuTLS for curl due to TSU exemptions
+PACKAGECONFIG:pn-curl = "${@bb.utils.contains("DISTRO_FEATURES", "ipv6", "ipv6", "", d)} proxy openssl verbose zlib"
+
+PACKAGECONFIG:pn-glmark2 = "drm-gles2 wayland-gles2"
+
+# Set this to empty string to prevent xwayland config from being added
+PACKAGECONFIG:pn-weston-init-arago = ""
+PREFERRED_RPROVIDER_virtual-emptty-conf = "weston-init-arago"
+
+# Enable testing for opencl and vulkan with piglit
+PACKAGECONFIG:append:pn-piglit = " \
+    ${@bb.utils.filter("DISTRO_FEATURES", "opencl vulkan", d)} \
+    ${@bb.utils.contains("DISTRO_FEATURES", "opengl", "deqp-gles", "", d)} \
+    ${@bb.utils.contains("DISTRO_FEATURES", "vulkan", "deqp-vk", "", d)} \
+"
+PACKAGECONFIG:pn-opengl-es-cts = "${@bb.utils.contains("DISTRO_FEATURES", "wayland", "wayland", "surfaceless", d)}"
+PACKAGECONFIG:pn-vulkan-cts = "${@bb.utils.contains("DISTRO_FEATURES", "wayland", "wayland", "surfaceless", d)}"
+
+# Use llvmpipe for better performance with software rendering
+# Only available for armv6+ devices
+MESA_GALLIUM_LLVM_PACKAGECONFIG = "gallium-llvm"
+MESA_GALLIUM_LLVM_PACKAGECONFIG:omapl138 = ""
+PACKAGECONFIG:append:pn-mesa = " ${MESA_GALLIUM_LLVM_PACKAGECONFIG}"
+PACKAGECONFIG:append:pn-mesa-pvr = " ${MESA_GALLIUM_LLVM_PACKAGECONFIG}"
+
+# Enable netperf intervals/pacing and histogram
+PACKAGECONFIG:append:pn-netperf = " intervals histogram"
+
+# Use OpenGL ES2 for SDL2
+PACKAGECONFIG_GL:pn-libsdl2 = "gles2"
+
+# Add KMS/DRM backend support
+PACKAGECONFIG:append:pn-libsdl2 = " kmsdrm"
+
+# Enable cryptodev/devcrypto engine in OpenSSL 1.1
+PACKAGECONFIG:append:pn-openssl = " cryptodev-linux"
+
+# Enable GST_TRACER logging in gstreamer
+PACKAGECONFIG:append:pn-gstreamer1.0 = " tracer-hooks coretracers"
+
+# Enable kmssink in gstreamer
+PACKAGECONFIG:append:pn-gstreamer1.0-plugins-bad = " kms"
+
+# Enable gstreamer plugin for libcamera
+PACKAGECONFIG:append:pn-libcamera = " gst"
+
+# Disable pulseaudio routing in alsa by default
+PACKAGECONFIG:remove:pn-alsa-plugins = "pulseaudio"
+RDEPENDS:pulseaudio-server:remove = "alsa-plugins-pulseaudio-conf"
+
+# Configure RAMFS for jailhouse linux-demo
+JH_RAMFS_IMAGE = "tisdk-jailhouse-inmate"
+
+# Enable UI and scripting for perf
+PERF_FEATURES_ENABLE ?= "perf-scripting perf-tui"
+
+# Load default preferences
+require conf/machine/include/arago-prefs.inc
+
+require conf/machine/include/branding-core.inc
+
+# Disable meta-virtualization sanity check and warning
+SKIP_META_VIRT_SANITY_CHECK = "1"
+
+# Codecs in libav and ffmpeg with questionable patent statuses are not
+# included by default. If you enable any of those codecs you should check
+# if the below acceptance flags still work for your software distribution
+LICENSE_FLAGS_ACCEPTED = "commercial_ffmpeg commercial_gstreamer1.0-libav"
+
+# https://bugzilla.yoctoproject.org/show_bug.cgi?id=15553
+INSANE_SKIP:nativesdk-qemu-user-mips += "build-deps"

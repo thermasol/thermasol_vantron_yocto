@@ -1,0 +1,26 @@
+From 3866207cdb8622e94fb80cfa98f691c41f10b9b9 Mon Sep 17 00:00:00 2001
+From: "y.he01" <y.he01@vantron.com>
+Date: Mon, 20 Dec 2021 20:16:15 +0800
+Subject: [PATCH] version libraries
+
+Signed-off-by: y.he01 <y.he01@vantron.com>
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 50e7f51..1ab8474 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -33,7 +33,7 @@ IF(BUILD_STATIC)
+ ENDIF(BUILD_STATIC)
+ 
+ ADD_LIBRARY(uci SHARED ${LIB_SOURCES})
+-SET_TARGET_PROPERTIES(uci PROPERTIES OUTPUT_NAME uci)
++SET_TARGET_PROPERTIES(uci PROPERTIES VERSION ${ABIVERSION})
+ TARGET_LINK_LIBRARIES(uci ${ubox})
+ 
+ ADD_LIBRARY(uci-static STATIC ${LIB_SOURCES})
+-- 
+2.17.1
+

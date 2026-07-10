@@ -1,0 +1,33 @@
+From 686a4d37eba3e611a52ea42de85e159ed731aaf3 Mon Sep 17 00:00:00 2001
+From: "zhu.chen" <zhu.chen@vantron.com>
+Date: Wed, 25 Jun 2025 14:49:26 +0800
+Subject: [PATCH] feat(mali): compile
+
+Signed-off-by: zhu.chen <zhu.chen@vantron.com>
+---
+ src/gui/configure.cmake | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/gui/configure.cmake b/src/gui/configure.cmake
+index 26434f82044..e0c2ee02096 100644
+--- a/src/gui/configure.cmake
++++ b/src/gui/configure.cmake
+@@ -265,14 +265,13 @@ qt_config_compile_test(egl_mali
+         EGL::EGL
+         ${plaform_graphics_libs}
+     CODE
+-"#include <EGL/fbdev_window.h>
++"
+ #include <EGL/egl.h>
+ #include <GLES2/gl2.h>
+ 
+ int main(void)
+ {
+     /* BEGIN TEST: */
+-fbdev_window *w = 0;
+     /* END TEST: */
+     return 0;
+ }
+-- 
+2.25.1
+

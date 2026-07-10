@@ -1,0 +1,12 @@
+# Yocto build output (rebuilt locally)
+build/tmp*/
+build/sstate-cache/
+build/downloads/
+build/cache/
+build/buildhistory/
+
+# Bitbake logs
+build/*.log
+
+# Claude Code local workspace
+build/.claude/

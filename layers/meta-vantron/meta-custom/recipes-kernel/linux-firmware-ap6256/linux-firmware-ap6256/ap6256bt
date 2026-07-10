@@ -1,0 +1,7 @@
+#!/bin/sh
+if [ -n '$(dmesg | grep "wl_android_wifi_on : Success")' ]; then
+    echo 576 > /sys/class/gpio/export
+    echo out > /sys/class/gpio/gpio576/direction
+    echo 1 > /sys/class/gpio/gpio576/value
+    brcm_patchram_plus --enable_hci --no2bytes --tosleep 200000 --baudrate 115200 --patchram /lib/firmware/bcmdhd/BCM4345C5.hcd /dev/ttyS2
+fi

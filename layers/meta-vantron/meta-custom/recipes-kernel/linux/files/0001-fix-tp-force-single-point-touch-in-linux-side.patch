@@ -1,0 +1,100 @@
+From a6c42569ad3358e3d951aa838b18899ef6ebe5e2 Mon Sep 17 00:00:00 2001
+From: "zhu.chen" <zhu.chen@vantron.com>
+Date: Tue, 24 Feb 2026 14:35:02 +0800
+Subject: [PATCH] fix(tp): force single point touch in linux side
+
+Signed-off-by: zhu.chen <zhu.chen@vantron.com>
+---
+ drivers/input/touchscreen/chct7xxx/platform.h       |  3 ++-
+ .../input/touchscreen/chct7xxx/semi_touch_device.c  |  8 ++++----
+ .../touchscreen/chct7xxx/semi_touch_function.c      | 13 ++++++++++---
+ 3 files changed, 16 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/input/touchscreen/chct7xxx/platform.h b/drivers/input/touchscreen/chct7xxx/platform.h
+index d801e50e4..52087ab88 100755
+--- a/drivers/input/touchscreen/chct7xxx/platform.h
++++ b/drivers/input/touchscreen/chct7xxx/platform.h
+@@ -38,7 +38,8 @@
+ #define SEMI_TOUCH_IRQ_VAR_QUEUE                0
+ #define SEMI_TOUCH_SUSPEND_BY_TPCMD             1
+ #define SEMI_TOUCH_VKEY_MAPPING                 1
+-#define SEMI_TOUCH_MAX_POINTS                   1
++#define SEMI_TOUCH_MAX_POINTS                   5
++#define SEMI_TOUCH_READ_POINTS                  1
+ #define SEMI_TOUCH_SOLUTION_X                   720
+ #define SEMI_TOUCH_SOLUTION_Y                   1440
+ #define CHSC_DEVICE_NAME                        "semi_touch"
+diff --git a/drivers/input/touchscreen/chct7xxx/semi_touch_device.c b/drivers/input/touchscreen/chct7xxx/semi_touch_device.c
+index 236473b81..847fcc885 100755
+--- a/drivers/input/touchscreen/chct7xxx/semi_touch_device.c
++++ b/drivers/input/touchscreen/chct7xxx/semi_touch_device.c
+@@ -60,7 +60,7 @@ static int input_device_init(struct sm_touch_dev *st_dev)
+ #if MULTI_PROTOCOL_TYPE_A == MULTI_PROTOCOL_TYPE
+     input_set_abs_params(st_dev->input, ABS_MT_TRACKING_ID, 0, 255, 0, 0);
+ #elif MULTI_PROTOCOL_TYPE_B == MULTI_PROTOCOL_TYPE
+-    input_mt_init_slots(st_dev->input, SEMI_TOUCH_MAX_POINTS, INPUT_MT_DIRECT /*1*/);
++    input_mt_init_slots(st_dev->input, SEMI_TOUCH_READ_POINTS, INPUT_MT_DIRECT /*1*/);
+ #endif
+ 
+     ret = input_register_device(st_dev->input);
+@@ -150,7 +150,7 @@ static irqreturn_t semi_touch_irq_handler_imp(int irq, void *p)
+         }
+ 
+ #if MULTI_PROTOCOL_TYPE_A == MULTI_PROTOCOL_TYPE
+-        for(index = 0; index < SEMI_TOUCH_MAX_POINTS; index++)
++        for(index = 0; index < SEMI_TOUCH_READ_POINTS; index++)
+         {
+             //EVENT_UP = 0x04
+             pointed = (0x04 == ppt->rp.event) ? false : true;
+@@ -181,7 +181,7 @@ static irqreturn_t semi_touch_irq_handler_imp(int irq, void *p)
+             ppt++;
+         }
+ #elif MULTI_PROTOCOL_TYPE_B == MULTI_PROTOCOL_TYPE
+-        for(index = 0; index < SEMI_TOUCH_MAX_POINTS; index++)
++        for(index = 0; index < SEMI_TOUCH_READ_POINTS; index++)
+         {
+             //EVENT_UP = 0x04
+             pointed = (0x04 == ppt->rp.event) ? false : true;
+@@ -250,7 +250,7 @@ irqreturn_t semi_touch_clear_report(void)
+     input_sync(st_dev.input);
+ #elif MULTI_PROTOCOL_TYPE_B == MULTI_PROTOCOL_TYPE
+     int index = 0;
+-    for(index = 0; index < SEMI_TOUCH_MAX_POINTS; index++)
++    for(index = 0; index < SEMI_TOUCH_READ_POINTS; index++)
+     {
+         input_mt_slot(st_dev.input, index);
+         input_mt_report_slot_state(st_dev.input, MT_TOOL_FINGER, false);
+diff --git a/drivers/input/touchscreen/chct7xxx/semi_touch_function.c b/drivers/input/touchscreen/chct7xxx/semi_touch_function.c
+index 16a4574ab..17dd8b44d 100755
+--- a/drivers/input/touchscreen/chct7xxx/semi_touch_function.c
++++ b/drivers/input/touchscreen/chct7xxx/semi_touch_function.c
+@@ -351,6 +351,7 @@ int cmd_send_to_tp_no_check(struct m_ctp_cmd_std_t *ptr_cmd)
+ int read_and_report_touch_points(unsigned char *readbuffer, unsigned short len)
+ {
+     int ret = 0, retry = 0;
++    int fw_points;
+     int read_flag = -SEMI_DRV_ERR_CHECKSUM;
+     unsigned short tem = 0;
+ 
+@@ -378,9 +379,15 @@ int read_and_report_touch_points(unsigned char *readbuffer, unsigned short len)
+     {
+         ret = semi_touch_read_bytes(st_dev.stc.touch_addr, readbuffer, len);
+         check_return_if_fail(ret, NULL);
+-        tem = (unsigned short) readbuffer[SEMI_TOUCH_MAX_POINTS * 5 + 3] << 8;
+-        tem |= readbuffer[SEMI_TOUCH_MAX_POINTS * 5 + 2];
+-        if(0 == ((caculate_checksum_u816(readbuffer, SEMI_TOUCH_MAX_POINTS * 5 + 2) + tem) & 0xFFFF))
++        fw_points = SEMI_TOUCH_MAX_POINTS;
++    try_read:
++        tem = (unsigned short) readbuffer[fw_points * 5 + 3] << 8;
++        tem |= readbuffer[fw_points * 5 + 2];
++        if (tem == 0xffff && fw_points != SEMI_TOUCH_READ_POINTS) {
++            fw_points = SEMI_TOUCH_READ_POINTS;
++            goto try_read;
++        }
++        if(0 == ((caculate_checksum_u816(readbuffer, fw_points * 5 + 2) + tem) & 0xFFFF))
+         {
+             read_flag = SEMI_DRV_ERR_OK;
+         }
+-- 
+2.25.1
+

@@ -1,0 +1,10 @@
+[Match]
+Name=en* eth* wlan*
+KernelCommandLine=!nfsroot
+
+[Network]
+DHCP=yes
+
+[DHCP]
+RouteMetric=10
+ClientIdentifier=mac

@@ -1,0 +1,28 @@
+From 61632fcb564240a3202fc5ea4383256b52ec701b Mon Sep 17 00:00:00 2001
+From: "y.he01" <y.he01@vantron.com>
+Date: Fri, 10 Feb 2023 11:50:30 +0800
+Subject: [PATCH] Allow cross compilation
+
+Upstream-Status: Pending
+
+---
+ Makefile | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index baf0860..77ef12b 100644
+--- a/Makefile
++++ b/Makefile
+@@ -22,9 +22,6 @@ MINORVER = 2
+ PATCHLEVEL = 0
+ EEPROM_UTIL_VERSION = $(VERSION).$(MINORVER).$(PATCHLEVEL)
+ 
+-CROSS_COMPILE ?=
+-CC = $(CROSS_COMPILE)gcc
+-
+ OBJDIR := obj
+ DEPDIR := dep
+ 
+-- 
+2.34.1
+

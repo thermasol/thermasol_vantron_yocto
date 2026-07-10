@@ -1,0 +1,28 @@
+From f5b1a87eaf72d4781a31cecf4189654a37f4fed3 Mon Sep 17 00:00:00 2001
+From: "zhu.chen" <zhu.chen@vantron.com>
+Date: Wed, 25 Jun 2025 15:26:22 +0800
+Subject: [PATCH] feat(eglfs): compile
+
+Signed-off-by: zhu.chen <zhu.chen@vantron.com>
+---
+ 0001-feat-egl-compile.patch  | 28 ++++++++++++++++++++++++++++
+ 0001-feat-mali-compile.patch | 33 +++++++++++++++++++++++++++++++++
+ cmake/FindGLESv2.cmake       |  3 +--
+ 1 files changed, 62 insertions(+), 2 deletions(-)
+diff --git a/cmake/FindGLESv2.cmake b/cmake/FindGLESv2.cmake
+index d615a300f48..e125e50dde2 100644
+--- a/cmake/FindGLESv2.cmake
++++ b/cmake/FindGLESv2.cmake
+@@ -34,8 +34,7 @@ else()
+ #endif
+ 
+ int main(int, char **) {
+-    glUniform1f(1, GLfloat(1.0));
+-    glClear(GL_COLOR_BUFFER_BIT);
++    return 0;
+ }" HAVE_GLESv2)
+ 
+     set(CMAKE_REQUIRED_LIBRARY "${_libraries}")
+-- 
+2.25.1
+

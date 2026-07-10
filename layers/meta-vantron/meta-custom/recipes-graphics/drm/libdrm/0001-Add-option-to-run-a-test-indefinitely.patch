@@ -1,0 +1,78 @@
+From 035ea52b3c9f8b9d4d82c78e2e5f9d974da4d018 Mon Sep 17 00:00:00 2001
+From: Alejandro Hernandez <ajhernandez@ti.com>
+Date: Tue, 3 Mar 2020 09:52:06 -0500
+Subject: [PATCH] Add option to run a test indefinitely
+
+This patch adds option -t to the modetest cli. When this option is
+speficied modetest will not stop on stdin input. This patch
+allows using modetest within ltp-ddt, before this patch modetest
+was not able to run in ltp-ddt because ltp-ddt sends data to stdin
+when a test is run
+
+Upstream-Status: Pending
+
+Signed-off-by: Alejandro Hernandez <ajhernandez@ti.com>
+Signed-off-by: Denys Dmytriyenko <denis@denix.org>
+
+---
+ tests/modetest/modetest.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/tests/modetest/modetest.c b/tests/modetest/modetest.c
+index fc75383..8e59acc 100644
+--- a/tests/modetest/modetest.c
++++ b/tests/modetest/modetest.c
+@@ -1767,7 +1767,7 @@ static void clear_cursors(struct device *dev)
+ 		bo_destroy(dev->mode.cursor_bo);
+ }
+ 
+-static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned int count)
++static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned int count, int dont_stop)
+ {
+ 	unsigned int other_fb_id;
+ 	struct bo *other_bo;
+@@ -1825,7 +1825,7 @@ static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned
+ 		fd_set fds;
+ 
+ 		FD_ZERO(&fds);
+-		FD_SET(0, &fds);
++		if (!dont_stop) FD_SET(0, &fds);
+ 		FD_SET(dev->fd, &fds);
+ 		ret = select(dev->fd + 1, &fds, NULL, NULL, &timeout);
+ 
+@@ -2032,7 +2032,7 @@ static void usage(char *name)
+ 	exit(0);
+ }
+ 
+-static char optstr[] = "acdD:efF:M:P:ps:Cvrw:o:";
++static char optstr[] = "acdD:efF:M:P:ps:Cvrw:o:t";
+ 
+ int main(int argc, char **argv)
+ {
+@@ -2049,6 +2049,7 @@ int main(int argc, char **argv)
+ 	char *module = NULL;
+ 	unsigned int i;
+ 	unsigned int count = 0, plane_count = 0;
++	int dont_stop = 0;
+ 	unsigned int prop_count = 0;
+ 	struct pipe_arg *pipe_args = NULL;
+ 	struct plane_arg *plane_args = NULL;
+@@ -2148,6 +2149,9 @@ int main(int argc, char **argv)
+ 
+ 			prop_count++;
+ 			break;
++		case 't':
++			dont_stop = 1;
++			break;
+ 		default:
+ 			usage(argv[0]);
+ 			break;
+@@ -2275,7 +2279,7 @@ int main(int argc, char **argv)
+ 				set_cursors(&dev, pipe_args, count);
+ 
+ 			if (test_vsync)
+-				test_page_flip(&dev, pipe_args, count);
++				test_page_flip(&dev, pipe_args, count, dont_stop);
+ 
+ 			if (drop_master)
+ 				drmDropMaster(dev.fd);

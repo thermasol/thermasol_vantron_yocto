@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+set timeout 100
+spawn real-resize-helper
+match_max 100000
+
+expect {
+        "Yes/No?" {
+            send -- "Yes\r"
+            exp_continue
+        }
+        "Ignore/Cancel?" {
+            send -- "Cancel\r"
+            exp_continue
+        }
+}

@@ -1,0 +1,2 @@
+#deb http://vtlinux.vantron.com/@machine@ sumo main restricted
+deb http://192.168.9.201/@machine@ sumo main restricted

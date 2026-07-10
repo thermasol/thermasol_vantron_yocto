@@ -1,0 +1,10 @@
+[Unit]
+Description=create eeprom link
+After=systemd-user-sessions.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c '/bin/ln -sf $(find /sys/devices/platform -name eeprom) /dev/eeprom'
+
+[Install]
+WantedBy=local-fs.target

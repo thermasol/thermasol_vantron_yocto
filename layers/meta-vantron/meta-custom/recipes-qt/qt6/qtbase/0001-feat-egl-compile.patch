@@ -1,0 +1,28 @@
+From f47a40b1a563f320aa8890963bf55ebefd3f9b8a Mon Sep 17 00:00:00 2001
+From: "zhu.chen" <zhu.chen@vantron.com>
+Date: Wed, 25 Jun 2025 15:15:00 +0800
+Subject: [PATCH] feat(egl): compile
+
+Signed-off-by: zhu.chen <zhu.chen@vantron.com>
+---
+ cmake/3rdparty/extra-cmake-modules/find-modules/FindEGL.cmake | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/cmake/3rdparty/extra-cmake-modules/find-modules/FindEGL.cmake b/cmake/3rdparty/extra-cmake-modules/find-modules/FindEGL.cmake
+index 4ab6e284e71..13979ce829f 100644
+--- a/cmake/3rdparty/extra-cmake-modules/find-modules/FindEGL.cmake
++++ b/cmake/3rdparty/extra-cmake-modules/find-modules/FindEGL.cmake
+@@ -129,9 +129,7 @@ check_cxx_source_compiles("
+ #include <EGL/egl.h>
+ 
+ int main(int, char **) {
+-    [[maybe_unused]] EGLint x = 0;
+-    EGLDisplay dpy = 0; EGLContext ctx = 0;
+-    eglDestroyContext(dpy, ctx);
++    return 0;
+ }" HAVE_EGL)
+ 
+ cmake_pop_check_state()
+-- 
+2.25.1
+

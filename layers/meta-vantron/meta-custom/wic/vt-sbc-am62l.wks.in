@@ -1,0 +1,7 @@
+# short-description: Create SD card image with a boot partition
+
+part --source bootimg-partition --fstype=vfat --label boot --active --align 1024 --use-uuid --fixed-size 64M
+part / --source rootfs --fstype=ext4 --label root --align 1024 --use-uuid
+part --source rawcopy --sourceparams="file=vtlinux-image-userfs-vtlinux-${MACHINE}.userfs.ext4" --ondisk mmcblk0 --fstype=ext4 --label userfs
+
+bootloader --ptable gpt

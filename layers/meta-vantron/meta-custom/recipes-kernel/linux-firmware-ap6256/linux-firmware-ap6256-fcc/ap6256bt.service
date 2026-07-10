@@ -1,0 +1,10 @@
+[Unit]
+Description=AP6256 BT Setup
+After=systemd-user-sessions.service
+
+[Service]
+ExecStart=ap6256bt
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
