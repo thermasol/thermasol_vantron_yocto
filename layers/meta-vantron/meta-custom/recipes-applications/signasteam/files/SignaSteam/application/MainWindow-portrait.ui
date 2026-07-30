@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindowPortrait</class>
+ <widget class="QMainWindow" name="MainWindowPortrait">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>480</width>
+    <height>800</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background:Black;</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <widget class="QFrame" name="navigationBar">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>116</width>
+      <height>800</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <widget class="QToolButton" name="steamScreenButton">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>55</y>
+       <width>116</width>
+       <height>97</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border:0;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources/resources.qrc">
+       <normaloff>:/images/portrait/main_window/Steam_Icon_Normal_77x97.png</normaloff>
+       <normalon>:/images/portrait/main_window/Steam_Icon_Active_77x97.png</normalon>:/images/portrait/main_window/Steam_Icon_Normal_77x97.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>77</width>
+       <height>97</height>
+      </size>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">navBarButtonGroup</string>
+     </attribute>
+    </widget>
+    <widget class="QLabel" name="navBarHorizontalSeparator">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>605</y>
+       <width>74</width>
+       <height>3</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/portrait/main_window/Sepatrator_Bar_Horiz_Normal_74x3.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="showerScreenButton">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>203</y>
+       <width>116</width>
+       <height>85</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border:0;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources/resources.qrc">
+       <normaloff>:/images/portrait/main_window/Shower_Icon_Normal_86x85.png</normaloff>
+       <normalon>:/images/portrait/main_window/Shower_Icon_Active_86x85.png</normalon>:/images/portrait/main_window/Shower_Icon_Normal_86x85.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>86</width>
+       <height>85</height>
+      </size>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">navBarButtonGroup</string>
+     </attribute>
+    </widget>
+    <widget class="QToolButton" name="musicScreenButton">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>343</y>
+       <width>116</width>
+       <height>78</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border:0;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources/resources.qrc">
+       <normaloff>:/images/portrait/main_window/Music_Icon_Normal_74x78.png</normaloff>
+       <normalon>:/images/portrait/main_window/Music_Icon_Active_74x78.png</normalon>:/images/portrait/main_window/Music_Icon_Normal_74x78.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>74</width>
+       <height>78</height>
+      </size>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">navBarButtonGroup</string>
+     </attribute>
+    </widget>
+    <widget class="QToolButton" name="lightScreenButton">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>471</y>
+       <width>116</width>
+       <height>88</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border:0;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources/resources.qrc">
+       <normaloff>:/images/portrait/main_window/Light_Icon_Normal_83x88.png</normaloff>
+       <normalon>:/images/portrait/main_window/Light_Icon_Active_83x88.png</normalon>:/images/portrait/main_window/Light_Icon_Normal_83x88.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>83</width>
+       <height>88</height>
+      </size>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">navBarButtonGroup</string>
+     </attribute>
+    </widget>
+    <widget class="QLabel" name="navBarActiveContainerSeparator">
+     <property name="geometry">
+      <rect>
+       <x>113</x>
+       <y>11</y>
+       <width>3</width>
+       <height>778</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/portrait/main_window/Sepatrator_Bar_Vert_Normal_3x778.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="settingsScreenButton">
+     <property name="geometry">
+      <rect>
+       <x>24</x>
+       <y>623</y>
+       <width>66</width>
+       <height>66</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border:0;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources/resources.qrc">
+       <normaloff>:/images/common/main_window/Settings_Icon_Normal_66x66.png</normaloff>
+       <normalon>:/images/common/main_window/Settings_Icon_Active_66x66.png</normalon>:/images/common/main_window/Settings_Icon_Normal_66x66.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>66</width>
+       <height>66</height>
+      </size>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">navBarButtonGroup</string>
+     </attribute>
+    </widget>
+    <widget class="QToolButton" name="powerScreenButton">
+     <property name="geometry">
+      <rect>
+       <x>26</x>
+       <y>715</y>
+       <width>62</width>
+       <height>68</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border:0;</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../resources/resources.qrc">
+       <normaloff>:/images/common/main_window/Power_Icon_Normal_62x68.png</normaloff>
+       <normalon>:/images/common/main_window/Power_Icon_Active_62x68.png</normalon>:/images/common/main_window/Power_Icon_Normal_62x68.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>62</width>
+       <height>68</height>
+      </size>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <attribute name="buttonGroup">
+      <string notr="true">navBarButtonGroup</string>
+     </attribute>
+    </widget>
+    <widget class="QFrame" name="navBarFrame">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>116</width>
+       <height>700</height>
+      </rect>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+    </widget>
+    <zorder>navBarFrame</zorder>
+    <zorder>steamScreenButton</zorder>
+    <zorder>navBarHorizontalSeparator</zorder>
+    <zorder>showerScreenButton</zorder>
+    <zorder>musicScreenButton</zorder>
+    <zorder>lightScreenButton</zorder>
+    <zorder>navBarActiveContainerSeparator</zorder>
+    <zorder>settingsScreenButton</zorder>
+    <zorder>powerScreenButton</zorder>
+   </widget>
+   <widget class="QStackedWidget" name="activeScreenContainer">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>0</y>
+      <width>364</width>
+      <height>704</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+   </widget>
+   <widget class="QFrame" name="timeAndUserFrame">
+    <property name="geometry">
+     <rect>
+      <x>117</x>
+      <y>704</y>
+      <width>363</width>
+      <height>99</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <widget class="QLabel" name="clockTimeValue">
+     <property name="geometry">
+      <rect>
+       <x>196</x>
+       <y>38</y>
+       <width>166</width>
+       <height>27</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>11</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: white;</string>
+     </property>
+     <property name="text">
+      <string>44:44 PM</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="usernameValue">
+     <property name="geometry">
+      <rect>
+       <x>7</x>
+       <y>30</y>
+       <width>184</width>
+       <height>47</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>11</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: white;</string>
+     </property>
+     <property name="text">
+      <string>WWhpWWW</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QLabel" name="timeUserVolumeBottomHorizontalSeparator">
+     <property name="geometry">
+      <rect>
+       <x>14</x>
+       <y>0</y>
+       <width>332</width>
+       <height>3</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/portrait/common/Sepatrator_Bar_Horiz_Normal_332x3.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QToolButton" name="backlightOffBtnClickArea">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>0</y>
+      <width>480</width>
+      <height>800</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border:0;</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>62</width>
+      <height>68</height>
+     </size>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="thermasolLogoUserScreen">
+    <property name="geometry">
+     <rect>
+      <x>49</x>
+      <y>312</y>
+      <width>383</width>
+      <height>85</height>
+     </rect>
+    </property>
+    <property name="contextMenuPolicy">
+     <enum>Qt::NoContextMenu</enum>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+    </property>
+    <property name="text">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/portrait/main_window/Home_Icon_Thermasol_383x85.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QSlider" name="volumeBarSlider">
+    <property name="geometry">
+     <rect>
+      <x>222</x>
+      <y>639</y>
+      <width>223</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="minimum">
+     <number>1</number>
+    </property>
+    <property name="maximum">
+     <number>15</number>
+    </property>
+    <property name="pageStep">
+     <number>3</number>
+    </property>
+    <property name="value">
+     <number>1</number>
+    </property>
+    <property name="tracking">
+     <bool>false</bool>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLabel" name="timeUserVolumeTopHorizontalSeparator">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>605</y>
+      <width>332</width>
+      <height>3</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/portrait/common/Sepatrator_Bar_Horiz_Normal_332x3.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="thermasolLogoMainWindow">
+    <property name="geometry">
+     <rect>
+      <x>158</x>
+      <y>629</y>
+      <width>276</width>
+      <height>62</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/portrait/main_window/Thermasol _Logo_Normal_ 276x62.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="volumeMuteToggleBtn">
+    <property name="geometry">
+     <rect>
+      <x>145</x>
+      <y>634</y>
+      <width>63</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border:none</string>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../resources/resources.qrc">
+      <normaloff>:/images/common/common/Sound_Icon_Mute_72x72.png</normaloff>
+      <normalon>:/images/common/common/Sound_Icon_Active_Grad_72x72.png</normalon>:/images/common/common/Sound_Icon_Mute_72x72.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>60</width>
+      <height>60</height>
+     </size>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <zorder>backlightOffBtnClickArea</zorder>
+   <zorder>thermasolLogoUserScreen</zorder>
+   <zorder>navigationBar</zorder>
+   <zorder>timeAndUserFrame</zorder>
+   <zorder>volumeBarSlider</zorder>
+   <zorder>timeUserVolumeTopHorizontalSeparator</zorder>
+   <zorder>thermasolLogoMainWindow</zorder>
+   <zorder>volumeMuteToggleBtn</zorder>
+   <zorder>activeScreenContainer</zorder>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="../resources/resources.qrc"/>
+  <include location="../resources/resources.qrc"/>
+ </resources>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="navBarButtonGroup"/>
+ </buttongroups>
+</ui>

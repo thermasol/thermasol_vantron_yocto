@@ -1,0 +1,1 @@
+user_commands=setenv dfu_alt_info "tiboot3 raw 0x0 0x23d mmcpart 1;tispl raw 0x400 0x909 mmcpart 1;u-boot raw 0x1400 0x1400 mmcpart 1;emmc raw 0x0 0x0 mmcpart 0";mmc partconf 0 1 1 0;mmc bootbus 0 2 0 0;dfu 0 mmc 0;

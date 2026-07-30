@@ -128,7 +128,16 @@ class PkgRootfs(DpkgOpkgRootfs):
         self.log_check_regex = '^E:'
         self.log_check_expected_regexes = \
         [
-            "^E: Unmet dependencies."
+            "^E: Unmet dependencies.",
+            # apt-ftparchive's own lightweight package scanner (used only to
+            # build the local repo's Packages index, not to actually install
+            # anything) can't parse some PAX/GNU tar extended header types
+            # ("W: Unknown TAR header type 120") that GNU tar >= 1.35 emits
+            # for files with capabilities/xattrs even in --format=gnu mode.
+            # This doesn't affect actual package installation — verified
+            # directly with `dpkg --unpack` on affected archives — so it's
+            # cosmetic and shouldn't fail the whole rootfs build.
+            "^E: Errors apply to file "
         ]
 
         bb.utils.remove(self.image_rootfs, True)

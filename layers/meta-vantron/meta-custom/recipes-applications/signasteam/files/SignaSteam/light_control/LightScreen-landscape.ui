@@ -1,0 +1,798 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LightScreenLandscape</class>
+ <widget class="QWidget" name="LightScreenLandscape">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>710</width>
+    <height>367</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background:black;</string>
+  </property>
+  <widget class="QLabel" name="bodySpectrum">
+   <property name="geometry">
+    <rect>
+     <x>111</x>
+     <y>0</y>
+     <width>228</width>
+     <height>364</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/landscape/light_screen/Body_Spectrum_Normal_228x364.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+  <widget class="QSlider" name="lightIntensityBarSlider">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>30</y>
+     <width>40</width>
+     <height>223</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>100</number>
+   </property>
+   <property name="singleStep">
+    <number>1</number>
+   </property>
+   <property name="pageStep">
+    <number>20</number>
+   </property>
+   <property name="value">
+    <number>0</number>
+   </property>
+   <property name="tracking">
+    <bool>false</bool>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Vertical</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="separationBar">
+   <property name="geometry">
+    <rect>
+     <x>406</x>
+     <y>269</y>
+     <width>256</width>
+     <height>3</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/landscape/light_screen/Separation_Bar_Normal_256x3.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="moodLightBtn">
+   <property name="geometry">
+    <rect>
+     <x>430</x>
+     <y>272</y>
+     <width>103</width>
+     <height>94</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/common/light_screen/Mood_Light_Ring_Normal_103x94.png</normaloff>
+     <normalon>:/images/landscape/light_screen/Mood_Light_Active_103x94.png</normalon>:/images/common/light_screen/Mood_Light_Ring_Normal_103x94.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>103</width>
+     <height>94</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="whiteLightBtn">
+   <property name="geometry">
+    <rect>
+     <x>542</x>
+     <y>272</y>
+     <width>93</width>
+     <height>94</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/common/light_screen/White_Light_Ring_Normal_94x94.png</normaloff>
+     <normalon>:/images/landscape/light_screen/White_Light_Active_94x94.png</normalon>:/images/common/light_screen/White_Light_Ring_Normal_94x94.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>93</width>
+     <height>94</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QLabel" name="lightDescription">
+   <property name="geometry">
+    <rect>
+     <x>357</x>
+     <y>6</y>
+     <width>357</width>
+     <height>286</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="blueLightBtn">
+   <property name="geometry">
+    <rect>
+     <x>286</x>
+     <y>61</y>
+     <width>77</width>
+     <height>77</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/landscape/light_screen/Blue_Icon_Normal_77x77.png</normaloff>
+     <normalon>:/images/landscape/light_screen/Blue_Icon_Active_77x77.png</normalon>:/images/landscape/light_screen/Blue_Icon_Normal_77x77.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>77</width>
+     <height>77</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="autoExclusive">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="violetLightBtn">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>0</y>
+     <width>80</width>
+     <height>72</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/landscape/light_screen/Violet_Icon_Normal_80x72.png</normaloff>
+     <normalon>:/images/landscape/light_screen/Violet_Icon_Active_80x72.png</normalon>:/images/landscape/light_screen/Violet_Icon_Normal_80x72.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>80</width>
+     <height>72</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="autoExclusive">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="yellowLightBtn">
+   <property name="geometry">
+    <rect>
+     <x>289</x>
+     <y>135</y>
+     <width>86</width>
+     <height>89</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/landscape/light_screen/Yellow_Icon_Normal_86x89.png</normaloff>
+     <normalon>:/images/landscape/light_screen/Yellow_Icon_Active_86x89.png</normalon>:/images/landscape/light_screen/Yellow_Icon_Normal_86x89.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>86</width>
+     <height>89</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="autoExclusive">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="redLightBtn">
+   <property name="geometry">
+    <rect>
+     <x>294</x>
+     <y>275</y>
+     <width>79</width>
+     <height>79</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/landscape/light_screen/Red_Icon_Normal_79x79.png</normaloff>
+     <normalon>:/images/landscape/light_screen/Red_Icon_Active_79x79.png</normalon>:/images/landscape/light_screen/Red_Icon_Normal_79x79.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>79</width>
+     <height>79</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="autoExclusive">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="indigoLightBtn">
+   <property name="geometry">
+    <rect>
+     <x>92</x>
+     <y>17</y>
+     <width>103</width>
+     <height>76</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/landscape/light_screen/Purple_Icon_Normal_103x76.png</normaloff>
+     <normalon>:/images/landscape/light_screen/Purple_Icon_Active_103x76.png</normalon>:/images/landscape/light_screen/Purple_Icon_Normal_103x76.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>103</width>
+     <height>76</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="autoExclusive">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="greenLightBtn">
+   <property name="geometry">
+    <rect>
+     <x>77</x>
+     <y>98</y>
+     <width>82</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/landscape/light_screen/Green_Icon_Normal_82x81.png</normaloff>
+     <normalon>:/images/landscape/light_screen/Green_Icon_Active_82x81.png</normalon>:/images/landscape/light_screen/Green_Icon_Normal_82x81.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>82</width>
+     <height>81</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="autoExclusive">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="orangeLightBtn">
+   <property name="geometry">
+    <rect>
+     <x>76</x>
+     <y>188</y>
+     <width>90</width>
+     <height>95</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/landscape/light_screen/Orange_Icon_Normal_90x95.png</normaloff>
+     <normalon>:/images/landscape/light_screen/Orange_Icon_Active_90x95.png</normalon>:/images/landscape/light_screen/Orange_Icon_Normal_90x95.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>90</width>
+     <height>95</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="autoExclusive">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="violetLightBtnArrow">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>213</x>
+     <y>20</y>
+     <width>80</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset>
+     <disabledoff>:/images/landscape/light_screen/Violet_Arrow_Normal_80x26.png</disabledoff>
+     <disabledon>:/images/landscape/light_screen/Violet_Arrow_Active_80x26.png</disabledon>
+    </iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>80</width>
+     <height>26</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonArrowGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="blueLightBtnArrow">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>213</x>
+     <y>86</y>
+     <width>96</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset>
+     <disabledoff>:/images/landscape/light_screen/Blue_Arrow_Normal_96x26.png</disabledoff>
+     <disabledon>:/images/landscape/light_screen/Blue_Arrow_Active_96x26.png</disabledon>
+    </iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>96</width>
+     <height>26</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonArrowGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="greenLightBtnArrow">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>135</x>
+     <y>124</y>
+     <width>106</width>
+     <height>30</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset>
+     <disabledoff>:/images/landscape/light_screen/Green_Arrow_Normal_106X30.png</disabledoff>
+     <disabledon>:/images/landscape/light_screen/Green_Arrow_Active_106X30.png</disabledon>
+    </iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>106</width>
+     <height>30</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonArrowGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="yellowLightBtnArrow">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>213</x>
+     <y>167</y>
+     <width>105</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset>
+     <disabledoff>:/images/landscape/light_screen/Yellow_Arrow_Normal_105x26.png</disabledoff>
+     <disabledon>:/images/landscape/light_screen/Yellow_Arrow_Active_105x26.png</disabledon>
+    </iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>105</width>
+     <height>26</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonArrowGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="orangeLightBtnArrow">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>134</x>
+     <y>223</y>
+     <width>105</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset>
+     <disabledoff>:/images/landscape/light_screen/Orange_Arrow_Normal_105x26.png</disabledoff>
+     <disabledon>:/images/landscape/light_screen/Orange_Arrow_Active_105x26.png</disabledon>
+    </iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>105</width>
+     <height>26</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonArrowGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="redLightBtnArrow">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>232</x>
+     <y>297</y>
+     <width>88</width>
+     <height>36</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset>
+     <disabledoff>:/images/landscape/light_screen/Red_Arrow_Normal_88x26.png</disabledoff>
+     <disabledon>:/images/landscape/light_screen/Red_Arrow_Active_88x26.png</disabledon>
+    </iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>88</width>
+     <height>26</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonArrowGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="indigoLightBtnArrow">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>162</x>
+     <y>37</y>
+     <width>82</width>
+     <height>36</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset>
+     <disabledoff>:/images/landscape/light_screen/Indigo_Arrow_Normal_82x36.png</disabledoff>
+     <disabledon>:/images/landscape/light_screen/Indigo_Arrow_Active_82x36.png</disabledon>
+    </iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>82</width>
+     <height>36</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">lightButtonArrowGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="brightnessToggleBtn">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>270</y>
+     <width>81</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
+   </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border:none</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/common/light_screen/Light_Icon_Off_69x73.png</normaloff>
+     <normalon>:/images/landscape/main_window/Light_Icon_Active_69x73.png</normalon>:/images/common/light_screen/Light_Icon_Off_69x73.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>60</width>
+     <height>60</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <zorder>lightDescription</zorder>
+  <zorder>bodySpectrum</zorder>
+  <zorder>lightIntensityBarSlider</zorder>
+  <zorder>moodLightBtn</zorder>
+  <zorder>whiteLightBtn</zorder>
+  <zorder>yellowLightBtn</zorder>
+  <zorder>redLightBtn</zorder>
+  <zorder>indigoLightBtn</zorder>
+  <zorder>greenLightBtn</zorder>
+  <zorder>orangeLightBtn</zorder>
+  <zorder>separationBar</zorder>
+  <zorder>blueLightBtn</zorder>
+  <zorder>violetLightBtnArrow</zorder>
+  <zorder>blueLightBtnArrow</zorder>
+  <zorder>greenLightBtnArrow</zorder>
+  <zorder>yellowLightBtnArrow</zorder>
+  <zorder>orangeLightBtnArrow</zorder>
+  <zorder>redLightBtnArrow</zorder>
+  <zorder>indigoLightBtnArrow</zorder>
+  <zorder>violetLightBtn</zorder>
+  <zorder>brightnessToggleBtn</zorder>
+ </widget>
+ <resources>
+  <include location="../resources/resources.qrc"/>
+  <include location="../resources/resources.qrc"/>
+ </resources>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="lightButtonArrowGroup">
+   <property name="exclusive">
+    <bool>true</bool>
+   </property>
+  </buttongroup>
+  <buttongroup name="lightButtonGroup">
+   <property name="exclusive">
+    <bool>true</bool>
+   </property>
+  </buttongroup>
+ </buttongroups>
+</ui>

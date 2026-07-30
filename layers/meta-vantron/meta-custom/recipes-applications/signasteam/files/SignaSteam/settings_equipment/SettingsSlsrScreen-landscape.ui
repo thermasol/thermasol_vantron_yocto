@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingsSlsrScreenLandscape</class>
+ <widget class="QWidget" name="SettingsSlsrScreenLandscape">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>367</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background: color;</string>
+  </property>
+  <widget class="QToolButton" name="backButton">
+   <property name="geometry">
+    <rect>
+     <x>32</x>
+     <y>145</y>
+     <width>61</width>
+     <height>118</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/landscape/settings_screen/common/Settings_Back _Arrow_Normal_92x91.png</normaloff>:/images/landscape/settings_screen/common/Settings_Back _Arrow_Normal_92x91.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>61</width>
+     <height>118</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QLabel" name="slsrScreenLabel">
+   <property name="geometry">
+    <rect>
+     <x>171</x>
+     <y>24</y>
+     <width>549</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/landscape/settings_screen/equipment/slsr/Settings_Title_Serenity_SLSR_Normal_549x32.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="voiceOnOffBtn">
+   <property name="geometry">
+    <rect>
+     <x>295</x>
+     <y>267</y>
+     <width>86</width>
+     <height>86</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0;</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/common/settings_screen/equipment/slsr/Settings_SLSR_Button_Voice_Normal_138x26.png</normaloff>
+     <normalon>:/images/common/settings_screen/equipment/slsr/Settings_SLSR_Button_Voice_Active_138x26.png</normalon>:/images/common/settings_screen/equipment/slsr/Settings_SLSR_Button_Voice_Normal_138x26.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>86</width>
+     <height>86</height>
+    </size>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QLabel" name="separator">
+   <property name="geometry">
+    <rect>
+     <x>166</x>
+     <y>251</y>
+     <width>595</width>
+     <height>3</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/landscape/settings_screen/equipment/slsr/Settings_SLSR_Separator_Bar_Normal_138x26.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="voiceSectionLabel">
+   <property name="geometry">
+    <rect>
+     <x>175</x>
+     <y>298</y>
+     <width>88</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/common/settings_screen/equipment/slsr/Settings_SLSR_Label_Voice_Normal_138x26.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+  <widget class="QSlider" name="voiceVolumeBarSlider">
+   <property name="geometry">
+    <rect>
+     <x>509</x>
+     <y>288</y>
+     <width>223</width>
+     <height>40</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <number>15</number>
+   </property>
+   <property name="pageStep">
+    <number>3</number>
+   </property>
+   <property name="value">
+    <number>0</number>
+   </property>
+   <property name="tracking">
+    <bool>false</bool>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+  </widget>
+  <widget class="QLabel" name="voiceVolumeIcon">
+   <property name="geometry">
+    <rect>
+     <x>426</x>
+     <y>284</y>
+     <width>63</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/common/common/Sound_Icon_Normal_.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+ </widget>
+ <resources>
+  <include location="../resources/resources.qrc"/>
+  <include location="../resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

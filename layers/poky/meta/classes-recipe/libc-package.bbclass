@@ -66,19 +66,27 @@ do_prep_locale_tree() {
 	treedir=${WORKDIR}/locale-tree
 	rm -rf $treedir
 	mkdir -p $treedir/${base_bindir} $treedir/${base_libdir} $treedir/${datadir} $treedir/${localedir}
-	tar -cf - -C ${LOCALETREESRC}${datadir} -p i18n | tar -xf - -C $treedir/${datadir}
+	# These used to be "tar -cf - ... | tar -xf - ..." pipes, but GNU tar >= 1.35
+	# (Ubuntu 24.04+) issues *at()-family syscalls against directory fds in a
+	# pattern pseudo's fd-tracking doesn't reliably keep up with on deep trees
+	# (locale data is exactly that), causing intermittent-to-deterministic
+	# "got *at() syscall for unknown directory" failures. cp -a preserves the
+	# same properties (permissions, timestamps, symlinks) without it.
+	cp -a ${LOCALETREESRC}${datadir}/i18n $treedir/${datadir}/
 	# unzip to avoid parsing errors
-	for i in $treedir/${datadir}/i18n/charmaps/*gz; do 
+	for i in $treedir/${datadir}/i18n/charmaps/*gz; do
 		gunzip $i
 	done
-	# The extract pattern "./l*.so*" is carefully selected so that it will
-	# match ld*.so and lib*.so*, but not any files in the gconv directory
-	# (if it exists). This makes sure we only unpack the files we need.
-	# This is important in case usrmerge is set in DISTRO_FEATURES, which
-	# means ${base_libdir} == ${libdir}.
-	tar -cf - -C ${LOCALETREESRC}${base_libdir} -p . | tar -xf - -C $treedir/${base_libdir} --wildcards './l*.so*'
+	# The pattern "l*.so*" is carefully selected so that it will match
+	# ld*.so and lib*.so*, but not any files in the gconv directory (if it
+	# exists). This makes sure we only copy the files we need. This is
+	# important in case usrmerge is set in DISTRO_FEATURES, which means
+	# ${base_libdir} == ${libdir}.
+	for f in ${LOCALETREESRC}${base_libdir}/l*.so*; do
+		[ -e "$f" ] && cp -a "$f" $treedir/${base_libdir}/
+	done
 	if [ -f ${STAGING_LIBDIR_NATIVE}/libgcc_s.* ]; then
-		tar -cf - -C ${STAGING_LIBDIR_NATIVE} -p libgcc_s.* | tar -xf - -C $treedir/${base_libdir}
+		cp -a ${STAGING_LIBDIR_NATIVE}/libgcc_s.* $treedir/${base_libdir}/
 	fi
 	install -m 0755 ${LOCALETREESRC}${bindir}/localedef $treedir/${base_bindir}
 }
@@ -88,7 +96,7 @@ do_collect_bins_from_locale_tree() {
 
 	parent=$(dirname ${localedir})
 	mkdir -p ${PKGD}/$parent
-	tar -cf - -C $treedir/$parent -p $(basename ${localedir}) | tar -xf - -C ${PKGD}$parent
+	cp -a $treedir/$parent/$(basename ${localedir}) ${PKGD}$parent/
 
 	# Finalize tree by chaning all duplicate files into hard links
 	cross-localedef-hardlink -c -v ${WORKDIR}/locale-tree

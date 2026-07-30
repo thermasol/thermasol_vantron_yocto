@@ -45,3 +45,63 @@ checksum match. `SRC_URI`/`SRCREV` were repointed at the public
 source layers/poky/oe-init-build-env build
 bitbake <image-name>
 ```
+
+`build/conf/local.conf` and `build/conf/bblayers.conf` are already checked in and configured for
+`MACHINE = "vt-sbc-am62l"` / `DISTRO = "vtlinux"`, so `oe-init-build-env` just reuses them — no manual
+config is needed on a fresh clone.
+
+## Building the SignaTouch IR image
+
+```bash
+cd ~/vt-sbc-am62l-yocto
+source layers/poky/oe-init-build-env build
+bitbake vtlinux-image-signatouch-ir
+```
+
+This pulls in the `signatouch-ir` recipe (`layers/meta-vantron/meta-custom/recipes-applications/signatouch-ir/`),
+which fetches the app from `git@github.com:thermasol/SignaTouch_IR.git` (currently pinned to the `olivia_yocto`
+branch via `SRCREV` in the recipe) plus `ThermaCan` (CAN library, built from source for the target rather than
+using the prebuilt libs vendored in the app repo, which are wrong-architecture) and the separate
+`arcsliderplugin` recipe (custom Qt slider widget, also built from source). All three need SSH access to the
+`thermasol` GitHub org to fetch.
+
+A full from-scratch build takes several hours; an incremental rebuild (e.g. after bumping `SRCREV` or editing a
+recipe) reuses `build/sstate-cache` and only rebuilds what changed — typically a few minutes.
+
+### Output
+
+```
+build/deploy-ti/images/vt-sbc-am62l/vtlinux-image-signatouch-ir-vtlinux-vt-sbc-am62l.rootfs.wic
+```
+
+This is a symlink to the timestamped file from the most recent build
+(`...rootfs-<YYYYMMDDHHMMSS>.wic`). It's a single GPT-partitioned disk image (boot + rootfs + userfs) built
+against `mmcblk0` — the same image is used for both SD card and onboard eMMC on this board, there's no
+separate "SD" vs "eMMC" variant. Other formats (`.ext4`, `.ext4.gz`, `.tar.xz`, `.manifest`, SPDX SBOMs) land
+alongside it in the same directory.
+
+See `flash-tools/` for how to write the `.wic` to the board.
+
+## Updating the boot splash (psplash) logo
+
+The splash image is set via `SPLASH_IMAGES` in
+`layers/meta-vantron/meta-custom/recipes-core/psplash/psplash_git.bbappend`, currently pointing at
+`layers/meta-vantron/meta-custom/recipes-core/psplash/files/yocto.png` (still the placeholder image, not a
+real logo).
+
+The base recipe (`layers/poky/meta/recipes-core/psplash/psplash_git.bb`) already automates the old manual
+"run `make-image-header.sh`, rename to `psplash-poky-img.h`" process — its `do_compile()` fetches psplash's
+own source, runs that script against whatever PNG `SPLASH_IMAGES` points at, and rebuilds. No manual step is
+needed.
+
+To replace the logo:
+
+1. Drop your PNG into `layers/meta-vantron/meta-custom/recipes-core/psplash/files/` — either overwrite
+   `yocto.png` in place, or add a new file and update the `SPLASH_IMAGES` path in the `.bbappend` to match.
+   Match the panel's resolution/aspect ratio (480x854) for a clean result — psplash scales to the framebuffer,
+   but starting from the right aspect avoids distortion.
+2. Rebuild:
+   ```bash
+   bitbake -c cleansstate psplash && bitbake psplash
+   # or rebuild the full image; psplash is pulled in as a dependency
+   ```

@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingsEquipmentScreenPortrait</class>
+ <widget class="QWidget" name="SettingsEquipmentScreenPortrait">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>364</width>
+    <height>704</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background: color;</string>
+  </property>
+  <widget class="QToolButton" name="digitalShowerBtnClickArea">
+   <property name="geometry">
+    <rect>
+     <x>35</x>
+     <y>119</y>
+     <width>205</width>
+     <height>60</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">settingsEquipmentGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="slsrBtnImg">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>428</y>
+     <width>60</width>
+     <height>60</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/common/settings_screen/equipment/Settings_Equipment_SLSR_Normal_60x60.png</normaloff>
+     <disabledoff>:/images/common/settings_screen/equipment/Settings_Equipment_SLSR_Inactive_60x60.png</disabledoff>:/images/common/settings_screen/equipment/Settings_Equipment_SLSR_Normal_60x60.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>60</width>
+     <height>60</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="diagnosticsBtnClickArea">
+   <property name="geometry">
+    <rect>
+     <x>36</x>
+     <y>589</y>
+     <width>277</width>
+     <height>48</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">settingsEquipmentGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="slsrBtnLabel">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>109</x>
+     <y>410</y>
+     <width>220</width>
+     <height>96</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0;</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/portrait/settings_screen/equipment/Settings_Vert_Equipment_Label_SLSR_Normal_220x96.png</normaloff>
+     <disabledoff>:/images/portrait/settings_screen/equipment/Settings_Vert_Equipment_Label_SLSR_Inactive_220x96.png</disabledoff>:/images/portrait/settings_screen/equipment/Settings_Vert_Equipment_Label_SLSR_Normal_220x96.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>220</width>
+     <height>96</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="diagnosticsBtnImg">
+   <property name="geometry">
+    <rect>
+     <x>36</x>
+     <y>589</y>
+     <width>48</width>
+     <height>48</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/common/settings_screen/equipment/Settings_Equipment_Diagnostics_Normal_48x48.png</normaloff>:/images/common/settings_screen/equipment/Settings_Equipment_Diagnostics_Normal_48x48.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>48</width>
+     <height>48</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="steamGeneratorBtnClickArea">
+   <property name="geometry">
+    <rect>
+     <x>34</x>
+     <y>270</y>
+     <width>256</width>
+     <height>66</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">settingsEquipmentGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="steamGeneratorBtnImg">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>34</x>
+     <y>270</y>
+     <width>52</width>
+     <height>66</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/common/settings_screen/equipment/Settings_Equipment_Steam_Icon_Normal_52x66.png</normaloff>
+     <disabledoff>:/images/common/settings_screen/equipment/Settings_Equipment_Steam_Icon_Inactive_52x66.png</disabledoff>:/images/common/settings_screen/equipment/Settings_Equipment_Steam_Icon_Normal_52x66.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>52</width>
+     <height>66</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="digitalShowerBtnLabel">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>109</x>
+     <y>119</y>
+     <width>131</width>
+     <height>60</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0;</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/portrait/settings_screen/equipment/Settings_Vert_Equipment_Label_Digital_Shower_Normal_131x60.png</normaloff>
+     <disabledoff>:/images/portrait/settings_screen/equipment/Settings_Vert_Equipment_Label_Digital_Shower_Inactive_131x60.png</disabledoff>:/images/portrait/settings_screen/equipment/Settings_Vert_Equipment_Label_Digital_Shower_Normal_131x60.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>131</width>
+     <height>60</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QLabel" name="diagnosticsBtnLabel">
+   <property name="geometry">
+    <rect>
+     <x>109</x>
+     <y>601</y>
+     <width>204</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/common/settings_screen/equipment/Settings_Equipment_Label_Diagnostics_Normal_204x31.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="slsrBtnClickArea">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>410</y>
+     <width>299</width>
+     <height>96</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">settingsEquipmentGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QToolButton" name="digitalShowerBtnImg">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>35</x>
+     <y>123</y>
+     <width>51</width>
+     <height>50</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/common/settings_screen/equipment/Settings_Equipment_Shower_Icon_Normal_51x50.png</normaloff>
+     <disabledoff>:/images/common/settings_screen/equipment/Settings_Equipment_Shower_Icon_Inactive_51x50.png</disabledoff>:/images/common/settings_screen/equipment/Settings_Equipment_Shower_Icon_Normal_51x50.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>51</width>
+     <height>50</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QLabel" name="equipmentScreenLabel">
+   <property name="geometry">
+    <rect>
+     <x>23</x>
+     <y>28</y>
+     <width>187</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/images/common/settings_screen/equipment/Settings_Title_Equipment_Normal_187x32.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="steamGeneratorBtnLabel">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>109</x>
+     <y>270</y>
+     <width>181</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0;</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/portrait/settings_screen/equipment/Settings_Vert_Equipment_Label_Steam_Generator_Inactive_181x61.png</normaloff>
+     <disabledoff>:/images/portrait/settings_screen/equipment/Settings_Vert_Equipment_Label_Steam_Generator_Normal_181x61.png</disabledoff>:/images/portrait/settings_screen/equipment/Settings_Vert_Equipment_Label_Steam_Generator_Inactive_181x61.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>181</width>
+     <height>61</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="backButton">
+   <property name="geometry">
+    <rect>
+     <x>274</x>
+     <y>26</y>
+     <width>61</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0; background-color: rgba(255, 255, 255, 0);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/portrait/settings_screen/common/Settings_Vert_Back _Arrow_Normal_61x33.png</normaloff>:/images/portrait/settings_screen/common/Settings_Vert_Back _Arrow_Normal_61x33.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>61</width>
+     <height>33</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="hvslrBtnLabel">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>102</x>
+     <y>445</y>
+     <width>181</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">border: 0;</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/images/common/settings_screen/equipment/Settings_Equipment_Label_HydroVive_Normal_175x34.png</normaloff>
+     <disabledoff>:/images/common/settings_screen/equipment/Settings_Equipment_Label_HydroVive_Inactive_175x34.png</disabledoff>:/images/common/settings_screen/equipment/Settings_Equipment_Label_HydroVive_Normal_175x34.png</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>494</width>
+     <height>32</height>
+    </size>
+   </property>
+  </widget>
+  <zorder>slsrBtnImg</zorder>
+  <zorder>slsrBtnLabel</zorder>
+  <zorder>diagnosticsBtnImg</zorder>
+  <zorder>steamGeneratorBtnImg</zorder>
+  <zorder>digitalShowerBtnLabel</zorder>
+  <zorder>diagnosticsBtnLabel</zorder>
+  <zorder>slsrBtnClickArea</zorder>
+  <zorder>digitalShowerBtnImg</zorder>
+  <zorder>equipmentScreenLabel</zorder>
+  <zorder>steamGeneratorBtnLabel</zorder>
+  <zorder>backButton</zorder>
+  <zorder>digitalShowerBtnClickArea</zorder>
+  <zorder>steamGeneratorBtnClickArea</zorder>
+  <zorder>diagnosticsBtnClickArea</zorder>
+  <zorder>hvslrBtnLabel</zorder>
+ </widget>
+ <resources>
+  <include location="../resources/resources.qrc"/>
+  <include location="../resources/resources.qrc"/>
+ </resources>
+ <connections/>
+ <buttongroups>
+  <buttongroup name="settingsEquipmentGroup">
+   <property name="exclusive">
+    <bool>false</bool>
+   </property>
+  </buttongroup>
+ </buttongroups>
+</ui>

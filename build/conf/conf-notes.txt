@@ -1,0 +1,12 @@
+Available images for VtLinux layers are:
+
+  - Official VtLinux images:
+      vtlinux-image-core       -   VtLinux core image
+      vtlinux-image-qt         -   VtLinux qt image
+
+  - Other VtLinux images:
+      - Supported images:
+          vtlinux-image-weston    -   VtLinux weston image
+
+  - Maybe factory will use image:
+          vtlinux-image-factory   -   Factory image for burning

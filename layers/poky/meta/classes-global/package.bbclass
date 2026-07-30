@@ -350,8 +350,17 @@ python perform_packagecopy () {
 
     # Start by package population by taking a copy of the installed
     # files to operate on
-    # Preserve sparse files and hard links
-    cmd = 'tar --exclude=./sysroot-only -cf - -C %s -p -S . | tar -xf - -C %s' % (dest, dvar)
+    # Preserve sparse files and hard links.
+    #
+    # This used to pipe through "tar -cf - -C src -p -S . | tar -xf - -C dst",
+    # but GNU tar >= 1.35 (Ubuntu 24.04+) issues *at()-family syscalls against
+    # directory file descriptors in a pattern pseudo's fd-tracking doesn't
+    # reliably keep up with on deep trees (e.g. linux-libc-headers'/glibc's
+    # usr/include), causing intermittent-to-deterministic "got *at() syscall
+    # for unknown directory" failures. `cp -a` preserves the same properties
+    # (permissions, timestamps, symlinks, hardlinks, sparseness) without going
+    # through that syscall pattern.
+    cmd = "cd %s && find . -mindepth 1 -maxdepth 1 ! -name sysroot-only -exec cp -a -t %s -- {} +" % (dest, dvar)
     subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
 
     # replace RPATHs for the nativesdk binaries, to make them relocatable
