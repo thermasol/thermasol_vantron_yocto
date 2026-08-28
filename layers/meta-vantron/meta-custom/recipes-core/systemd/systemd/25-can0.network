@@ -1,0 +1,9 @@
+[Match]
+Name=can0
+
+[CAN]
+BitRate=100K
+
+[Link]
+RequiredForOnline=no
+TransmitQueueLength=1000
