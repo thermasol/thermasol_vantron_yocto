@@ -53,7 +53,7 @@ config is needed on a fresh clone.
 ## Building the SignaTouch IR image
 
 ```bash
-cd ~/vt-sbc-am62l-yocto
+cd ~/thermasol_vantron_yocto
 source layers/poky/oe-init-build-env build
 bitbake vtlinux-image-signatouch-ir
 ```
@@ -86,7 +86,7 @@ See `flash-tools/` for how to write the `.wic` to the board.
 ## Building the SignaTouch image
 
 ```bash
-cd ~/vt-sbc-am62l-yocto
+cd ~/thermasol_vantron_yocto
 source layers/poky/oe-init-build-env build
 bitbake vtlinux-image-signatouch
 ```
