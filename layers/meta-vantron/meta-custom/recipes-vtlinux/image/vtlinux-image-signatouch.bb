@@ -1,5 +1,5 @@
-SUMMARY = "Minimal VTLinux Qt5 EGLFS image for SignaTouch IR"
-DESCRIPTION = "Minimal embedded Linux image with Qt5 EGLFS backend and SignaTouch IR application"
+SUMMARY = "Minimal VTLinux Qt5 EGLFS image for SignaTouch"
+DESCRIPTION = "Minimal embedded Linux image with Qt5 EGLFS backend and SignaTouch application"
 LICENSE = "MIT"
 
 inherit core-image
@@ -15,11 +15,12 @@ IMAGE_FEATURES += " \
     ssh-server-openssh \
 "
 
-# Essential Qt5 packages for Widgets application
+# Essential Qt5 packages for Widgets application. No qtsvg: SignaSteam's
+# resources.qrc is PNG and TTF only (the IR image needs it for
+# arcsliderplugin, this one doesn't).
 QT5_PACKAGES = " \
     qtbase \
     qtbase-plugins \
-    qtsvg \
 "
 
 # Graphics/OpenGL packages for EGLFS.
@@ -29,7 +30,7 @@ QT5_PACKAGES = " \
 # only because qtbase is currently built with eglfs/gles2 and so RDEPENDS
 # on libegl-mesa/libgles2-mesa. See phase-2 item (a) in
 # vtlinux-image-kiosk.inc for the linuxfb swap that removes all of it;
-# SignaTouch_IR is pure QWidget and needs no GL.
+# SignaSteam is pure QWidget and needs no GL.
 #
 # libdrm-tests and kmscube were bring-up tools, not runtime dependencies -
 # they now live behind KIOSK_DEBUG_TOOLS.
@@ -58,7 +59,7 @@ FONT_PACKAGES = " \
 # at, localedef, lsb-release, glibc-utils, gawk, cups/ghostscript/man via
 # its -extra group, apt-conf -> gnupg (5 MB), firmwared, tcpdump, iperf3,
 # hostapd, avahi, sqlite3+db, memtester/minicom/usbutils/parted/gptfdisk
-# and libiio - none of which SignaTouch_IR links against or execs. The
+# and libiio - none of which SignaSteam links against or execs. The
 # pieces that are genuinely load-bearing on this board are named below;
 # busybox (from packagegroup-core-boot) provides the shell utilities the
 # startup scripts use.
@@ -102,10 +103,44 @@ VENDOR_PACKAGES = " \
     eeprom-link \
 "
 
-# Your application
+# Your application.
+#
+# display-rotation is load-bearing here, not optional as it is on the IR
+# unit: SignaSteam has a user-selectable orientation (the first-boot wizard
+# and Settings > Device > Orientation), it stores the choice as
+# orientationSelected in /opt/ThermaSol/SignaSteam.conf, and
+# set-display-rotation.sh is what turns that into the EGLFS rotation at the
+# next boot. It also forces the panel backlight to full brightness.
 APP_PACKAGES = " \
-    signatouch-ir \
+    signatouch \
     display-rotation \
+"
+
+# Room-temperature sensor.
+#
+# The app reads the thermistor divider on ADC channel 0 through IIO sysfs
+# (/sys/bus/iio/devices/iio:device0/in_voltage0_raw, see
+# EquipmentCanInterface::onTempSensorTimerTimeOut) and converts it with a
+# Steinhart/B-factor curve. What has to be true for that node to exist:
+#
+#   DT      tscadc0 is status = "okay" with ti,adc-channels = <0 1> and
+#           adc_pins_default, in vt-sbc-am62l.dtsi - already the case.
+#   Kernel  CONFIG_IIO=y, CONFIG_IIO_BUFFER=y, and
+#           CONFIG_MFD_TI_AM335X_TSCADC=m / CONFIG_TI_AM335X_ADC=m /
+#           CONFIG_IIO_KFIFO_BUF=m in vt_sbc_am62l_defconfig.
+#   Rootfs  the three module packages below. kernel-module-ti-am335x-adc
+#           is already in KIOSK_MODULES_SENSORS in vtlinux-image-kiosk.inc
+#           and pulls the other two via kernel-module-split's modinfo
+#           RDEPENDS; they are named again here so that a future edit to
+#           the shared kiosk allowlist can't silently take the temperature
+#           reading out of this product.
+#   Boot    /etc/modules-load.d/ti-adc.conf, shipped by the signatouch
+#           recipe, so the node is there before the app's first read
+#           instead of depending on udev coldplug timing.
+SENSOR_PACKAGES = " \
+    kernel-module-ti-am335x-adc \
+    kernel-module-ti-am335x-tscadc \
+    kernel-module-kfifo-buf \
 "
 
 CORE_IMAGE_EXTRA_INSTALL += " \
@@ -115,6 +150,7 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     ${CORE_PACKAGES} \
     ${HARDWARE_PACKAGES} \
     ${VENDOR_PACKAGES} \
+    ${SENSOR_PACKAGES} \
     ${APP_PACKAGES} \
 "
 
@@ -140,7 +176,7 @@ rootfs_versions () {
 # The local display is owned by the boot splash and then the app - a getty
 # login prompt on tty1 (same physical framebuffer) paints its /etc/issue
 # banner and "login:" prompt right over whatever psplash/the app drew
-# there (confirmed on-device with SignaSteam). Serial debug access via
+# there (confirmed on-device). Serial debug access via
 # ttyS0 is unaffected since it's a separate console.
 ROOTFS_POSTPROCESS_COMMAND += "mask_display_getty; "
 

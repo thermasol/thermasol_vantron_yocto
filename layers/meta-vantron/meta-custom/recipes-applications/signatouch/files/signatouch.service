@@ -1,0 +1,77 @@
+[Unit]
+Description=SignaTouch (SignaSteam) Qt5 Application
+
+# Ordering. Deliberately NOT "After=multi-user.target": systemd starts
+# everything in that target in parallel, so ordering the app after the
+# target makes it wait for the slowest unrelated service in the whole set
+# before it is even allowed to exec. The app needs none of them.
+#
+# What it actually needs is a writable rootfs (QSettings writes
+# /opt/ThermaSol/SignaSteam.conf), udev running so the DRM card and the
+# chsc5xxx evdev node exist, the ADC modules loaded so the room-temperature
+# sysfs node is there, and the splash still up so the handoff below is a
+# handoff rather than a flash of black. Restart=on-failure covers the race
+# where /dev/dri/card0 is not quite there yet.
+After=local-fs.target
+After=systemd-udevd.service
+After=systemd-modules-load.service
+After=psplash-start.service
+
+# CAN. The app talks to the PSB/steam generator over can0 (libthermacan
+# opens a raw CAN socket); 25-can0.network in the systemd bbappend brings
+# the interface up at 100K. This is Wants=, not Requires=, because the UI
+# must still come up on a bench unit with nothing on the bus - libthermacan
+# retries, and the temperature/equipment screens degrade to defaults.
+Wants=sys-subsystem-net-devices-can0.device
+After=sys-subsystem-net-devices-can0.device
+
+[Service]
+Type=simple
+# Run as root to access the DRM device, the CAN socket and /sys.
+User=root
+# Environment variables for Qt5 EGLFS
+Environment="QT_QPA_PLATFORM=eglfs"
+Environment="QT_QPA_EGLFS_INTEGRATION=eglfs_kms"
+Environment="QT_QPA_EGLFS_ALWAYS_SET_MODE=1"
+Environment="QT_QPA_EGLFS_KMS_CONFIG=/etc/qt5/eglfs_kms.json"
+# Qt's QPA logging at "=true" prints a page of mode-setting detail to the
+# serial console at every start. stdout-path is main_uart0 at 115200 baud
+# and the writes are synchronous, so that is real time on the critical
+# path. Warnings and above still reach the journal.
+Environment="QT_LOGGING_RULES=qt.qpa.*.debug=false"
+Environment="XDG_RUNTIME_DIR=/run/user/0"
+# Fix font warnings
+Environment="QT_QPA_FONTDIR=/usr/share/fonts"
+# Nothing else has a reason to create /run/user/0 this early in the boot,
+# so create it here. 0700 rather than the 0755 default:
+# QStandardPaths::runtimeLocation() checks the mode and warns otherwise.
+RuntimeDirectory=user/0
+RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=yes
+# Screen rotation. set-display-rotation.sh reads orientationSelected out of
+# /opt/ThermaSol/SignaSteam.conf (the file QSettings writes, and that the
+# in-app orientation wizard updates before rebooting), writes the matching
+# rotation into /etc/qt5/eglfs_kms.json and QT_QPA_EGLFS_ROTATION into
+# /etc/qt5/rotation.env, and forces the panel backlight to full. The
+# EnvironmentFile= line is what feeds that rotation back into this unit, so
+# it must stay ahead of the ExecStartPre that regenerates it - systemd
+# reads EnvironmentFile at unit start, i.e. the value written by the
+# *previous* boot's run. That is why changing orientation in the app
+# reboots the device.
+EnvironmentFile=-/etc/qt5/rotation.env
+ExecStartPre=/usr/bin/set-display-rotation.sh
+# Hand off the display from the boot splash to the app. "-" makes this
+# non-fatal if psplash isn't running.
+ExecStartPre=-/usr/bin/psplash-write "QUIT"
+ExecStart=/usr/bin/SignaSteam
+Restart=on-failure
+RestartSec=5
+# Ensure we have access to graphics devices
+SupplementaryGroups=video render
+
+[Install]
+# multi-user.target, matching SYSTEMD_DEFAULT_TARGET in
+# vtlinux-image-kiosk.inc. graphical.target only Requires multi-user.target
+# and adds a layer of ordering on top of it; with no display manager in the
+# image there would be nothing in it but this unit.
+WantedBy=multi-user.target

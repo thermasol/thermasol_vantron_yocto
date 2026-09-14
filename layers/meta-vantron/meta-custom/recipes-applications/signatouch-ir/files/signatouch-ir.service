@@ -1,8 +1,22 @@
 [Unit]
 Description=SignaTouch IR Qt5 Application
-After=systemd-user-sessions.service
-After=multi-user.target
-After=psplash-systemd.service
+
+# Ordering. This unit used to carry "After=multi-user.target", which is the
+# single most expensive line in the boot: systemd starts everything in
+# multi-user.target in parallel, so ordering the app after the *target*
+# makes it wait for the slowest unrelated service in the whole set (avahi,
+# ofono, rpcbind, dhcpcd/networkd, firmwared, iiod, crond...) before it is
+# even allowed to exec. The app needs none of them.
+#
+# What it actually needs is a writable rootfs, udev running so the DRM card
+# and the chsc5xxx evdev node exist, and the splash still up so the handoff
+# below is a handoff rather than a flash of black. Restart=on-failure
+# covers the race where /dev/dri/card0 is not quite there yet - the
+# panel-sitronix-st7701/cdns-dsi modprobe is fast, but it is not ordered
+# against anything.
+After=local-fs.target
+After=systemd-udevd.service
+After=psplash-start.service
 
 [Service]
 Type=simple
@@ -13,10 +27,23 @@ Environment="QT_QPA_PLATFORM=eglfs"
 Environment="QT_QPA_EGLFS_INTEGRATION=eglfs_kms"
 Environment="QT_QPA_EGLFS_ALWAYS_SET_MODE=1"
 Environment="QT_QPA_EGLFS_KMS_CONFIG=/etc/qt5/eglfs_kms.json"
-Environment="QT_LOGGING_RULES=qt.qpa.*=true"
+# Qt's QPA logging was left on at "=true", which prints a page of
+# mode-setting detail to the serial console at every start. stdout-path is
+# main_uart0 at 115200 baud and the writes are synchronous, so this is real
+# time on the critical path, not just noise. Warnings and above still reach
+# the journal, which is enough to diagnose a display failure.
+Environment="QT_LOGGING_RULES=qt.qpa.*.debug=false"
 Environment="XDG_RUNTIME_DIR=/run/user/0"
 # Fix font warnings
 Environment="QT_QPA_FONTDIR=/usr/share/fonts"
+# Now that the app is no longer ordered after multi-user.target it can
+# start before anything else has had a reason to create /run/user/0, so
+# create it here rather than leaving XDG_RUNTIME_DIR pointing at nothing.
+# 0700 rather than the 0755 default: QStandardPaths::runtimeLocation()
+# checks the mode and warns on every start if it is anything else.
+RuntimeDirectory=user/0
+RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=yes
 # Source rotation environment variable (set by ExecStartPre script). This
 # app has no SignaSteam.conf-style config file, so set-display-rotation.sh
 # falls back to its default (landscape/0 degrees) - fine unless/until this
@@ -32,4 +59,8 @@ RestartSec=5
 SupplementaryGroups=video render
 
 [Install]
-WantedBy=graphical.target
+# multi-user.target, matching SYSTEMD_DEFAULT_TARGET in
+# vtlinux-image-kiosk.inc. graphical.target only Requires multi-user.target
+# and adds a layer of ordering on top of it; with no display manager in the
+# image there was nothing in it but this unit.
+WantedBy=multi-user.target

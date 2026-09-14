@@ -60,8 +60,9 @@ bitbake vtlinux-image-signatouch-ir
 
 This pulls in the `signatouch-ir` recipe (`layers/meta-vantron/meta-custom/recipes-applications/signatouch-ir/`),
 which fetches the app from `git@github.com:thermasol/SignaTouch_IR.git` (currently pinned to the `olivia_yocto`
-branch via `SRCREV` in the recipe) plus `ThermaCan` (CAN library, built from source for the target rather than
-using the prebuilt libs vendored in the app repo, which are wrong-architecture) and the separate
+branch via `SRCREV` in the recipe) plus `ThermaCan` (CAN library at `master`, shared with the `signatouch`
+recipe, built from source for the target rather than using the prebuilt libs vendored in the app repo, which
+are wrong-architecture) and the separate
 `arcsliderplugin` recipe (custom Qt slider widget, also built from source). All three need SSH access to the
 `thermasol` GitHub org to fetch.
 
@@ -81,6 +82,74 @@ separate "SD" vs "eMMC" variant. Other formats (`.ext4`, `.ext4.gz`, `.tar.xz`, 
 alongside it in the same directory.
 
 See `flash-tools/` for how to write the `.wic` to the board.
+
+## Building the SignaTouch image
+
+```bash
+cd ~/vt-sbc-am62l-yocto
+source layers/poky/oe-init-build-env build
+bitbake vtlinux-image-signatouch
+```
+
+The two products share this BSP and differ only in the application on top of it:
+
+| | SignaTouch IR | SignaTouch |
+|---|---|---|
+| Image | `vtlinux-image-signatouch-ir` | `vtlinux-image-signatouch` |
+| App recipe | `signatouch-ir` | `signatouch` |
+| App repo / branch | `SignaTouch_IR.git` @ `olivia_yocto` | `SignaSteam.git` @ `signa_olivia` |
+| Binary | `/usr/bin/SignaTouch_IR` | `/usr/bin/SignaSteam` |
+| Extra Qt | `qtsvg` + `arcsliderplugin` | — (PNG/TTF resources only) |
+| Screen rotation | fixed landscape | user-selectable, persisted |
+| Room temp sensor | no | yes (TSCADC via IIO) |
+
+The `signatouch` recipe
+(`layers/meta-vantron/meta-custom/recipes-applications/signatouch/`) fetches the app from
+`git@github.com:thermasol/SignaSteam.git` (the upstream repo still carries the SignaSteam name) plus
+`ThermaCan`, which it builds from source for the target rather than using the wrong-architecture prebuilt
+libs vendored in the app repo. Both repos need SSH access to the `thermasol` GitHub org to fetch.
+
+Both product recipes pin the same `ThermaCan` revision — `master` — so there is one CAN library across the
+two images. Master is required by `signatouch`, whose app calls the `lctesv_slave_*` API, and it is a clean
+superset for `signatouch-ir`: every `extern` in that app's vendored `include/thermacan.h` is byte-identical
+to master's except `psb_get_psp_maintenance_counter()`, which master renamed and which `SignaTouch_IR` never
+calls. (The legacy `signasteam` recipe is unaffected — it builds ThermaCan from a vendored source copy, not
+from git.)
+
+`signatouch` conflicts with the older `signasteam` recipe — both install `/usr/bin/SignaSteam` and
+`/usr/lib/libthermacan.so`. `signasteam` builds the same app from a vendored source copy; `signatouch`
+builds it from git and is the one to use.
+
+### Screen rotation
+
+The app stores the user's choice as `orientationSelected` in `/opt/ThermaSol/SignaSteam.conf` (first-boot
+wizard, or Settings > Device > Orientation). At each boot `set-display-rotation.sh` (from the
+`display-rotation` recipe) reads it, writes `/etc/qt5/eglfs_kms.json` and
+`QT_QPA_EGLFS_ROTATION` into `/etc/qt5/rotation.env`, and forces the panel backlight to full brightness.
+`signatouch.service` sources `rotation.env` at unit start, which is why changing the orientation in the app
+reboots the device.
+
+### Room temperature sensor
+
+The app reads a thermistor divider on ADC channel 0 via
+`/sys/bus/iio/devices/iio:device0/in_voltage0_raw`. The pieces that make that node exist:
+
+- `tscadc0` is `status = "okay"` with `ti,adc-channels = <0 1>` in `vt-sbc-am62l.dtsi` (kernel repo).
+- `CONFIG_MFD_TI_AM335X_TSCADC=m`, `CONFIG_TI_AM335X_ADC=m`, `CONFIG_IIO_KFIFO_BUF=m` in
+  `vt_sbc_am62l_defconfig`, with `CONFIG_IIO`/`CONFIG_IIO_BUFFER` built in.
+- The matching `kernel-module-*` packages, named explicitly in `SENSOR_PACKAGES` in the image recipe.
+- `/etc/modules-load.d/ti-adc.conf`, shipped by the `signatouch` recipe, so the modules load at boot rather
+  than depending on udev coldplug timing.
+
+Sanity check on target: `cat /sys/bus/iio/devices/iio:device0/in_voltage0_raw` should return a 0-4095 count.
+
+### Output
+
+```
+build/deploy-ti/images/vt-sbc-am62l/vtlinux-image-signatouch-vtlinux-vt-sbc-am62l.rootfs.wic
+```
+
+Same layout and flashing procedure as the IR image above.
 
 ## Updating the boot splash (psplash) logo
 

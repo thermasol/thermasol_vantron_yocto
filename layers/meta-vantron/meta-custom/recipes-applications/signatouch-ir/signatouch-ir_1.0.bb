@@ -12,9 +12,18 @@ SRC_URI = "git://git@github.com/thermasol/SignaTouch_IR.git;protocol=ssh;branch=
 # olivia_yocto is a descendant of the master commit this was previously
 # pinned to (592f3e6) - it's a superset, not a divergent branch.
 SRCREV_signatouchir = "e77538a44214499a70d7db67be881de1f084e494"
-# Pinned to the same ThermaCan commit already proven working (cross-compile
-# quirks and all) in the signasteam recipe, for consistency between products.
-SRCREV_thermacan = "42aea0ad9eb19eeafe2af6f32bf4dea460815e0d"
+# ThermaCan master, shared with the signatouch recipe - one CAN library
+# revision across both products rather than a per-product pin.
+#
+# This moved off 42aea0ad (which the legacy signasteam recipe still builds
+# from its vendored copy). Master is a clean superset for this app: every
+# extern declaration in the app's own include/thermacan.h is byte-identical
+# to master's except psb_get_psp_maintenance_counter(), which master
+# renamed to psb_get_psb_maintenance_counter() - and nothing in
+# SignaTouch_IR calls it, it is only declared. Bumping this is what lets
+# the SignaSteam-based signatouch product link at all: that app calls the
+# lctesv_slave_* API, which does not exist at 42aea0ad.
+SRCREV_thermacan = "9b6342a45d07bed6017f84c9281f46c326eb554c"
 SRCREV_FORMAT = "signatouchir_thermacan"
 
 S = "${WORKDIR}/git"

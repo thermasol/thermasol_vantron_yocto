@@ -10,3 +10,9 @@ Available images for VtLinux layers are:
 
   - Maybe factory will use image:
           vtlinux-image-factory   -   Factory image for burning
+
+  - ThermaSol product images (single-app Qt5 EGLFS kiosk):
+          vtlinux-image-signatouch     -   SignaTouch (steam/shower/light/music,
+                                           rotatable display, room temp sensor)
+          vtlinux-image-signatouch-ir  -   SignaTouch IR (infrared sauna)
+
