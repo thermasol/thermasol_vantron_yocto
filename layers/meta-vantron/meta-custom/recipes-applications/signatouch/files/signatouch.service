@@ -17,13 +17,12 @@ After=systemd-udevd.service
 After=systemd-modules-load.service
 After=psplash-start.service
 
-# CAN. The app talks to the PSB/steam generator over can0 (libthermacan
-# opens a raw CAN socket); 25-can0.network in the systemd bbappend brings
-# the interface up at 100K. This is Wants=, not Requires=, because the UI
-# must still come up on a bench unit with nothing on the bus - libthermacan
-# retries, and the temperature/equipment screens degrade to defaults.
-Wants=sys-subsystem-net-devices-can0.device
-After=sys-subsystem-net-devices-can0.device
+# Deliberately NO dependency on can0. The app talks to the PSB over it
+# (libthermacan opens a raw CAN socket, 25-can0.network brings the
+# interface up at 100K), but a Wants=/After= on sys-subsystem-net-devices-
+# can0.device means a unit that never starts on a bench board with nothing
+# on the bus. libthermacan retries on its own and the screens degrade to
+# defaults, so the UI must come up regardless.
 
 [Service]
 Type=simple

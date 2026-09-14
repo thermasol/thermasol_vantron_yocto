@@ -3,7 +3,11 @@ DESCRIPTION = "SignaTouch IR control interface for infrared sauna"
 LICENSE = "CLOSED"
 
 DEPENDS = "qtbase qtbase-native qtsvg arcsliderplugin"
-RDEPENDS:${PN} += "qtbase qtbase-plugins qtsvg arcsliderplugin display-rotation psplash"
+# psplash-signatouch-ir, not bare psplash: the splash artwork is compiled
+# into the psplash binary, and the base recipe builds one binary per entry
+# in SPLASH_IMAGES. Naming the product package here is what pairs this app
+# with its own splash - see recipes-core/psplash/psplash_git.bbappend.
+RDEPENDS:${PN} += "qtbase qtbase-plugins qtsvg arcsliderplugin display-rotation psplash-signatouch-ir"
 
 SRC_URI = "git://git@github.com/thermasol/SignaTouch_IR.git;protocol=ssh;branch=olivia_yocto;name=signatouchir;destsuffix=git \
            git://git@github.com/thermasol/ThermaCan.git;protocol=ssh;branch=master;name=thermacan;destsuffix=thermacan-src \

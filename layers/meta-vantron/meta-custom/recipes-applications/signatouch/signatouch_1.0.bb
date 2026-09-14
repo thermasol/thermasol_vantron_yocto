@@ -3,7 +3,11 @@ DESCRIPTION = "SignaTouch control interface for steam, shower, lighting and musi
 LICENSE = "CLOSED"
 
 DEPENDS = "qtbase qtbase-native"
-RDEPENDS:${PN} += "qtbase qtbase-plugins display-rotation psplash"
+# psplash-signatouch, not bare psplash: the splash artwork is compiled into
+# the psplash binary, and the base recipe builds one binary per entry in
+# SPLASH_IMAGES. Naming the product package here is what pairs this app
+# with its own splash - see recipes-core/psplash/psplash_git.bbappend.
+RDEPENDS:${PN} += "qtbase qtbase-plugins display-rotation psplash-signatouch"
 
 # The app shells out to these (SettingsScreenModel/WizardModel/
 # setuporientationdialog): /sbin/reboot, date, hwclock, and
@@ -20,7 +24,6 @@ RDEPENDS:${PN} += "busybox"
 SRC_URI = "git://git@github.com/thermasol/SignaSteam.git;protocol=ssh;branch=signa_olivia;name=signasteam;destsuffix=git \
            git://git@github.com/thermasol/ThermaCan.git;protocol=ssh;branch=master;name=thermacan;destsuffix=thermacan-src \
            file://signatouch.service \
-           file://ti-adc.conf \
           "
 SRCREV_signasteam = "048ea4fecd54a570b1c3f37b1249019557fbed30"
 
@@ -102,14 +105,6 @@ do_install() {
     install -d ${D}${systemd_system_unitdir}
     install -m 0644 ${WORKDIR}/signatouch.service ${D}${systemd_system_unitdir}/
 
-    # Room-temperature sensor: the app reads the thermistor divider through
-    # the TSCADC's IIO sysfs node (in_voltage0_raw on iio:device0). udev
-    # normally autoloads both modules off the DT compatible, but the read
-    # happens on a timer from app startup, so load them at boot explicitly
-    # rather than racing coldplug.
-    install -d ${D}${sysconfdir}/modules-load.d
-    install -m 0644 ${WORKDIR}/ti-adc.conf ${D}${sysconfdir}/modules-load.d/
-
     # QSettings writes /opt/ThermaSol/SignaSteam.conf (main.cpp sets the
     # NativeFormat UserScope path to /opt/), and set-display-rotation.sh
     # reads orientationSelected back out of it at every boot.
@@ -118,7 +113,6 @@ do_install() {
 
 FILES:${PN} += "${bindir}/SignaSteam"
 FILES:${PN} += "${libdir}/libthermacan.so*"
-FILES:${PN} += "${sysconfdir}/modules-load.d/ti-adc.conf"
 FILES:${PN} += "/opt/ThermaSol"
 
 # Unversioned .so would otherwise be auto-claimed by -dev before

@@ -153,24 +153,41 @@ Same layout and flashing procedure as the IR image above.
 
 ## Updating the boot splash (psplash) logo
 
-The splash image is set via `SPLASH_IMAGES` in
-`layers/meta-vantron/meta-custom/recipes-core/psplash/psplash_git.bbappend`, currently pointing at
-`layers/meta-vantron/meta-custom/recipes-core/psplash/files/yocto.png` (still the placeholder image, not a
-real logo).
+Each product has its own splash. psplash compiles the PNG into the executable, and the base recipe
+(`layers/poky/meta/recipes-core/psplash/psplash_git.bb`) builds one binary per entry in `SPLASH_IMAGES`,
+packaged as `psplash-<outsuffix>` and registered as an update-alternatives provider of `/usr/bin/psplash`.
+The wiring lives in `layers/meta-vantron/meta-custom/recipes-core/psplash/psplash_git.bbappend`:
 
-The base recipe (`layers/poky/meta/recipes-core/psplash/psplash_git.bb`) already automates the old manual
-"run `make-image-header.sh`, rename to `psplash-poky-img.h`" process — its `do_compile()` fetches psplash's
-own source, runs that script against whatever PNG `SPLASH_IMAGES` points at, and rebuilds. No manual step is
-needed.
+| PNG (in `recipes-core/psplash/files/`) | Package | Used by |
+|---|---|---|
+| `signatouch.png` | `psplash-signatouch` | `signatouch` recipe -> `vtlinux-image-signatouch` |
+| `signatouch-ir.png` | `psplash-signatouch-ir` | `signatouch-ir` recipe -> `vtlinux-image-signatouch-ir` |
+| `yocto.png` | `psplash-default` | everything else (core, weston, qt5-minimal, factory) |
 
-To replace the logo:
+Artwork is tied to a product by the `RDEPENDS` in that product's **app** recipe (`psplash-signatouch` /
+`psplash-signatouch-ir`), not by the image recipe -- so an image gets the right splash purely by installing
+its app. `psplash-default` is always pulled in alongside (psplash's own `RDEPENDS` chain), so the product
+packages carry `ALTERNATIVE_PRIORITY 200` against the default's 100; without that the tie would be resolved
+arbitrarily and the splash would be a coin flip.
 
-1. Drop your PNG into `layers/meta-vantron/meta-custom/recipes-core/psplash/files/` — either overwrite
-   `yocto.png` in place, or add a new file and update the `SPLASH_IMAGES` path in the `.bbappend` to match.
-   Match the panel's resolution/aspect ratio (480x854) for a clean result — psplash scales to the framebuffer,
-   but starting from the right aspect avoids distortion.
+`signatouch-ir.png` is the Almost Heaven Saunas logo that previously shipped as `yocto.png` (and, because
+`SPLASH_IMAGES` was a single global entry, went into every image built from this layer).
+**`signatouch.png` is currently still the Yocto placeholder** -- the real artwork has not been added yet.
+
+To replace a product's logo:
+
+1. Overwrite the matching PNG in `layers/meta-vantron/meta-custom/recipes-core/psplash/files/`, keeping the
+   filename. Match the panel's resolution/aspect ratio (480x854) for a clean result -- psplash scales to the
+   framebuffer, but starting from the right aspect avoids distortion.
 2. Rebuild:
    ```bash
    bitbake -c cleansstate psplash && bitbake psplash
    # or rebuild the full image; psplash is pulled in as a dependency
    ```
+
+To add a splash for a *new* product: add a `file://<name>.png;outsuffix=<name>` entry to `SPLASH_IMAGES`, an
+`ALTERNATIVE_PRIORITY_psplash-<name> = "200"` line beside it, and `psplash-<name>` to that product's app
+recipe `RDEPENDS`.
+
+No manual `make-image-header.sh` step is needed -- the base recipe's `do_compile()` runs it against each PNG
+and rebuilds the binary.

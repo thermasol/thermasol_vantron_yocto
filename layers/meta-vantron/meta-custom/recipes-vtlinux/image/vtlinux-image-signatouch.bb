@@ -134,9 +134,14 @@ APP_PACKAGES = " \
 #           RDEPENDS; they are named again here so that a future edit to
 #           the shared kiosk allowlist can't silently take the temperature
 #           reading out of this product.
-#   Boot    /etc/modules-load.d/ti-adc.conf, shipped by the signatouch
-#           recipe, so the node is there before the app's first read
-#           instead of depending on udev coldplug timing.
+#   Boot    nothing extra - udev autoloads both off the DT compatible, which
+#           is how the sensor modules already come up on the IR units
+#           (they show in lsmod there). An /etc/modules-load.d drop-in was
+#           tried here and removed again: forcing these modules to load in
+#           early sysinit, ahead of udev settle, is the one boot-path
+#           difference this image had against the known-good IR image, and
+#           it buys nothing - the app polls on a timer and falls back to a
+#           default reading if the node isn't there yet.
 SENSOR_PACKAGES = " \
     kernel-module-ti-am335x-adc \
     kernel-module-ti-am335x-tscadc \
