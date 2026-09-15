@@ -50,6 +50,20 @@ bitbake <image-name>
 `MACHINE = "vt-sbc-am62l"` / `DISTRO = "vtlinux"`, so `oe-init-build-env` just reuses them — no manual
 config is needed on a fresh clone.
 
+### Host workaround wrappers (`build/scripts/`)
+
+Checked in alongside `build/conf/`, and wired up from `local.conf` via `${TOPDIR}`, so a fresh clone
+needs no setup:
+
+| File | Wired via | Works around |
+| --- | --- | --- |
+| `dpkg-deb-retry-v2.sh` | `DPKG_BUILDCMD` | `dpkg-deb`'s internal tar hitting the pseudo `*at()` race, and its silent truncated-`.deb` bug. Retries, validates the archive has both `control.tar` and `data.tar`, then falls back to `pydeb-build.py`. |
+| `pydeb-build.py` | called by the above | Pure-Python `.deb` builder used when `dpkg-deb` can't produce a valid archive. |
+| `tar` | `PATH:prepend` | GNU tar >= 1.35 emitting PAX `x` headers that this host's `dpkg` can't unpack during `do_rootfs`. Appends `--format=gnu`, leaving callers that ask for `--format`/`--posix`/`--xattrs`/`-H` alone. |
+
+Each script carries a full comment header explaining the failure mode it addresses. They are host-side
+Ubuntu 24.04 / WSL2 workarounds, not product configuration — drop them if a fixed `pseudo`/`dpkg` lands.
+
 ## Building the SignaTouch IR image
 
 ```bash
