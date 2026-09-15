@@ -1,5 +1,8 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
-SRC_URI = "git://git@git.vantrontech.us:8222/linux/ti/6.12/standard/VT-SBC-AM62L/kernel-ti.git;protocol=ssh;branch=${SRCBRANCH}"
+# Mirrored to GitHub because git.vantrontech.us is only reachable with Vantron
+# credentials, which not everyone on this team has. The mirror tracks the
+# Vantron branch verbatim -- SRCREV below is Vantron's own commit, unmodified.
+SRC_URI = "git://git@github.com/harvia-dev/thermasol_kernel-ti-am62l.git;protocol=ssh;branch=${SRCBRANCH}"
 SRCBRANCH = "vt-sbc-am62l"
 SRCREV = "1e8098a7ccba6f47094e0caf7ff9f0941d436ab4"
 

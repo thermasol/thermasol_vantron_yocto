@@ -1,4 +1,5 @@
-SRC_URI = "git://git@git.vantrontech.us:8222/linux/ti/6.12/standard/VT-SBC-AM62L/uboot-ti.git;protocol=ssh;branch=${SRCBRANCH}"
+# Mirrored to GitHub -- see the matching note in linux-ti-staging_%.bbappend.
+SRC_URI = "git://git@github.com/harvia-dev/thermasol_uboot-ti-am62l.git;protocol=ssh;branch=${SRCBRANCH}"
 
 SRCBRANCH = "vt-sbc-am62l"
 SRCREV = "bba251a2332e3a96157ae247020f6a7ff264ce25"
