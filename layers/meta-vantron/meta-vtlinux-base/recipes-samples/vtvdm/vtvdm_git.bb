@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/COPYING.MIT;md5=3da9cfbcb788c80a0384
 DEPENDS += "libvtcom"
 
 SRC_URI = " \
-    git://git@git.vantrontech.us:8222/linux/vantron/applications/vtvdm.git;protocol=ssh;branch=${SRCBRANCH} \
+    git://git@github.com/harvia-dev/thermasol_vtvdm.git;protocol=ssh;branch=${SRCBRANCH} \
     "
 SRCBRANCH = "arm"
 SRCREV = "d77fa513c40dd49b94ec2f5b24a973350cf0220f"
