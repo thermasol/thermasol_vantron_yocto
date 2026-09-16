@@ -14,8 +14,10 @@ ROTATION_ENV_FILE="/etc/qt5/rotation.env"
 # Ensure config directory exists
 mkdir -p "${EGLFS_CONFIG_DIR}"
 
-# Default to landscape if config file doesn't exist
-ORIENTATION="landscape"
+# Default to portrait if config file doesn't exist or key is unset.
+# First boot shows the orientation selection dialog in portrait so touch
+# always works without needing display rotation.
+ORIENTATION="portrait"
 ROTATION=0
 
 # Read orientation from SignaSteam config if it exists
@@ -23,17 +25,23 @@ if [ -f "${CONFIG_FILE}" ]; then
     ORIENTATION=$(grep "^orientationSelected=" "${CONFIG_FILE}" 2>/dev/null | cut -d'=' -f2)
 fi
 
-# Map orientation to rotation angle
+# Panel is physically 480x854 (portrait). Rotation=90 tells Qt EGLFS to render
+# 854x480 (landscape) and rotate output 90° CW to fit the portrait panel.
+# Qt EGLFS automatically rotates touch input to match QT_QPA_EGLFS_ROTATION —
+# no separate QT_QPA_EVDEV_TOUCHSCREEN_PARAMETERS needed.
 case "${ORIENTATION}" in
     landscape)
-        ROTATION=0
+        ROTATION=90
+        TOUCH_ROTATION=90
         ;;
     portrait)
-        ROTATION=90
+        ROTATION=0
+        TOUCH_ROTATION=0
         ;;
     *)
-        echo "Warning: Unknown orientation '${ORIENTATION}', defaulting to landscape"
+        echo "Warning: Unknown orientation '${ORIENTATION}', defaulting to portrait"
         ROTATION=0
+        TOUCH_ROTATION=0
         ;;
 esac
 
@@ -54,10 +62,21 @@ cat > "${EGLFS_CONFIG_FILE}" <<EOF
 }
 EOF
 
-# Generate environment file for software rotation
-cat > "${ROTATION_ENV_FILE}" <<EOF
+# Generate environment file for display rotation.
+# Read by signatouch.service via EnvironmentFile=-/etc/qt5/rotation.env.
+# Touch rotation is handled automatically by Qt EGLFS when QT_QPA_EGLFS_ROTATION
+# is set — do not set QT_QPA_EVDEV_TOUCHSCREEN_PARAMETERS separately or the
+# rotation compounds (double-rotates the touch input).
+if [ "${TOUCH_ROTATION}" -gt 0 ]; then
+    cat > "${ROTATION_ENV_FILE}" <<EOF
+QT_QPA_EGLFS_ROTATION=${ROTATION}
+QT_QPA_EVDEV_TOUCHSCREEN_PARAMETERS=/dev/input/event0:rotate=${TOUCH_ROTATION}
+EOF
+else
+    cat > "${ROTATION_ENV_FILE}" <<EOF
 QT_QPA_EGLFS_ROTATION=${ROTATION}
 EOF
+fi
 
 echo "EGLFS KMS configuration updated: ${EGLFS_CONFIG_FILE}"
 echo "Rotation environment file updated: ${ROTATION_ENV_FILE}"
