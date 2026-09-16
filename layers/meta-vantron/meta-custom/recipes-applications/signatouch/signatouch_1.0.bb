@@ -25,7 +25,7 @@ SRC_URI = "git://git@github.com/thermasol/SignaSteam.git;protocol=ssh;branch=sig
            git://git@github.com/thermasol/ThermaCan.git;protocol=ssh;branch=master;name=thermacan;destsuffix=thermacan-src \
            file://signatouch.service \
           "
-SRCREV_signasteam = "048ea4fecd54a570b1c3f37b1249019557fbed30"
+SRCREV_signasteam = "2e25328343be1d19ece9564a51fd2804e5115ff9"
 
 # ThermaCan master, shared with the signatouch-ir recipe - one CAN library
 # revision across both products.
