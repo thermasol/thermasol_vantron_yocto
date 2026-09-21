@@ -5,6 +5,12 @@ build/*
 !build/conf/
 !build/scripts/
 
+# Per-developer BitBake overrides. BitBake reads these automatically before
+# local.conf, so host-specific settings (thread counts, shared DL_DIR/SSTATE_DIR,
+# etc.) go here instead of editing the tracked local.conf.
+build/conf/site.conf
+build/conf/auto.conf
+
 # Python bytecode
 __pycache__/
 *.pyc

@@ -50,6 +50,18 @@ bitbake <image-name>
 `MACHINE = "vt-sbc-am62l"` / `DISTRO = "vtlinux"`, so `oe-init-build-env` just reuses them — no manual
 config is needed on a fresh clone.
 
+Both files are portable (paths are relative to `${TOPDIR}`), so keep them that way: don't commit absolute
+paths or host-specific tuning into `local.conf`. For per-machine settings, create `build/conf/site.conf`
+(gitignored) — BitBake reads it automatically before `local.conf`. Note that `local.conf` uses `?=` for
+`DL_DIR` / `SSTATE_DIR`, so a plain `=` in `site.conf` overrides them, e.g. to point at a shared cache:
+
+```
+DL_DIR = "/mnt/yocto-cache/downloads"
+SSTATE_DIR = "/mnt/yocto-cache/sstate-cache"
+BB_NUMBER_THREADS = "16"
+PARALLEL_MAKE = "-j 16"
+```
+
 ### Host workaround wrappers (`build/scripts/`)
 
 Checked in alongside `build/conf/`, and wired up from `local.conf` via `${TOPDIR}`, so a fresh clone
