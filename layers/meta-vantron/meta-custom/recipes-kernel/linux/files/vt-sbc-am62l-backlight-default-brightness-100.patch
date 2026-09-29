@@ -1,0 +1,30 @@
+From: Eric Tanner <eric.tanner@harvia.com>
+Subject: [PATCH] arm64: dts: vt-sbc-am62l: bring the panel backlight up at 100/255, not full
+
+The pwm-backlight node asked for default-brightness-level 255, so the
+kernel lit the panel at full duty the moment it probed - before any
+userspace policy could run. Full scale on this panel is brighter than the
+product wants and draws more backlight current than it needs.
+
+Start at 100. The rootfs (set-display-rotation.sh, then the SignaSteam app)
+writes the same level, so the panel comes up once at the product level and
+stays there.
+
+This does not cap max_brightness: pwm-backlight always maps the largest
+brightness-levels entry to 100% duty, so shrinking the table would only
+relabel the scale, not limit the current. The cap is enforced by every
+writer in the rootfs using 100.
+
+Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+---
+--- a/arch/arm64/boot/dts/ti/vt-sbc-am62l.dtsi
++++ b/arch/arm64/boot/dts/ti/vt-sbc-am62l.dtsi
+@@ -195,7 +195,7 @@
+ 			240 241 242 243 244 245 246 247
+ 			248 249 250 251 252 253 254 255
+ 		>;
+-		default-brightness-level = <255>;
++		default-brightness-level = <100>;
+ 	};
+ 	watchdog_gpio: watchdog-gpio {
+ 		compatible ="linux,wdt-gpio";

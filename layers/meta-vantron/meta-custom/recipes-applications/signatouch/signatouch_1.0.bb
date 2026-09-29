@@ -18,27 +18,31 @@ RDEPENDS:${PN} += "qtbase qtbase-plugins display-rotation psplash-signatouch"
 # page is a no-op. Revisit if field Wi-Fi provisioning is needed.
 RDEPENDS:${PN} += "busybox"
 
-# The product repo is still named SignaSteam upstream; signa_olivia is the
-# branch carrying the Olivia hardware work (temperature sensor, orientation
-# wizard, LCTESV slave support).
-SRC_URI = "git://git@github.com/thermasol/SignaSteam.git;protocol=ssh;branch=signa_olivia;name=signasteam;destsuffix=git \
+# The product repo is still named SignaSteam upstream. old_ui_Vantron is the
+# current production UI brought up on the Vantron AM62L board: the branch
+# point of signa_olivia plus the low-level pieces from it that the new
+# hardware needs (vendored ThermaCan headers, panel backlight level,
+# first-boot orientation wizard and synced orientation reboot). signa_olivia
+# is the new UI for the same board; switch the branch and SRCREV back to it
+# once it is production-ready.
+SRC_URI = "git://git@github.com/thermasol/SignaSteam.git;protocol=ssh;branch=old_ui_Vantron;name=signasteam;destsuffix=git \
            git://git@github.com/thermasol/ThermaCan.git;protocol=ssh;branch=master;name=thermacan;destsuffix=thermacan-src \
            file://signatouch.service \
           "
-SRCREV_signasteam = "2e25328343be1d19ece9564a51fd2804e5115ff9"
+SRCREV_signasteam = "58218fed366b269629d57d21f010f5a19ddc1bf5"
 
 # ThermaCan master, shared with the signatouch-ir recipe - one CAN library
 # revision across both products.
 #
-# It has to be master here, not the older 42aea0ad the legacy signasteam
-# recipe builds from its vendored copy: the headers in this app's
-# thermacan/include are byte-identical to master's, and the app calls
-# lctesv_slave_get_errors(), lctesv_slave_is_connected() and
-# lctesv_slave_send_heartbeat(), which are among 39 symbols that do not
-# exist at 42aea0ad - linking against that older tree fails. Note that
-# 25a35d5 ("thermacan update for slave"), where those headers landed, does
-# not compile (the process_msg() call site has the wrong argument list);
-# 61afea5 is the fix and 9b6342a is master on top of it.
+# The headers in this app's thermacan/include are byte-identical to
+# master's, so master is what the library has to be built from. (Every
+# psb_/slsr_/esv_ symbol old_ui_Vantron calls also exists at the older
+# 42aea0ad the legacy signasteam recipe used, but the signa_olivia UI needs
+# the lctesv_slave_* symbols that only master has - keeping one revision
+# across both branches means nothing to change when switching back.) Note
+# that 25a35d5 ("thermacan update for slave") does not compile (the
+# process_msg() call site has the wrong argument list); 61afea5 is the fix
+# and 9b6342a is master on top of it.
 SRCREV_thermacan = "9b6342a45d07bed6017f84c9281f46c326eb554c"
 SRCREV_FORMAT = "signasteam_thermacan"
 
@@ -58,23 +62,24 @@ do_configure:prepend() {
     # testlib. Drop it from the subdirs project.
     sed -i '/SignaSteam-Test/d' ${S}/SignaSteam-Project.pro
 
-    # The repo has build output committed next to the source (root Makefile
-    # and .qmake.stash, and under SignaSteam/ the Makefile, the x86 binary
-    # itself, moc_predefs.h and the generated moc_/ui_/qrc_ files and .o
-    # objects). qmake5 builds out of tree into ${B}, but stale generated
-    # sources in ${S} still get picked up through the include paths, so
-    # clear them.
+    # The repo has build output committed next to the source (root Makefile,
+    # and under SignaSteam/ the Makefile and generated qrc_resources.cpp;
+    # other branches also carry .qmake.stash, the x86 binary, moc_predefs.h,
+    # moc_/ui_ files and .o objects). qmake5 builds out of tree into ${B},
+    # but stale generated sources in ${S} still get picked up through the
+    # include paths, so clear them all - each rm is a no-op when absent.
     rm -f ${S}/Makefile ${S}/.qmake.stash ${S}/compile_commands.json
     rm -f ${S}/SignaSteam/Makefile ${S}/SignaSteam/SignaSteam \
           ${S}/SignaSteam/moc_predefs.h ${S}/SignaSteam/qrc_resources.cpp
     rm -f ${S}/SignaSteam/*.o ${S}/SignaSteam/moc_*.cpp ${S}/SignaSteam/moc_*.h \
           ${S}/SignaSteam/ui_*.h
 
-    # thermacan/libs ships a prebuilt libthermacan.so (32-bit ARM, from a
-    # different board) and libthermacan_x86.so (dev machine). Neither links
-    # into this aarch64 target - do_compile:prepend below rebuilds the real
-    # one from ThermaCan.git into the same path the .pri searches
-    # (-L$$PWD/thermacan/libs/).
+    # Some branches ship a prebuilt libthermacan.so (32-bit ARM, from a
+    # different board) and libthermacan_x86.so (dev machine) in
+    # thermacan/libs. Neither links into this aarch64 target - do_compile:
+    # prepend below rebuilds the real one from ThermaCan.git into the same
+    # path the .pri searches (-L$$PWD/thermacan/libs/). old_ui_Vantron
+    # commits only the headers and an empty libs/ directory.
     rm -f ${S}/thermacan/libs/libthermacan.so ${S}/thermacan/libs/libthermacan_x86.so
 }
 
@@ -88,6 +93,7 @@ do_compile:prepend() {
         ${CC} ${CFLAGS} -fpic -std=gnu99 -c $f.c -o $f.o
     done
     ${CC} ${LDFLAGS} -shared -pthread -o libthermacan.so thermacan.o pipe.o process_msg.o log.o
+    install -d ${S}/thermacan/libs
     cp libthermacan.so ${S}/thermacan/libs/libthermacan.so
     cd -
 }

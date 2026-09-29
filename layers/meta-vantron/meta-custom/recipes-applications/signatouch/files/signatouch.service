@@ -51,7 +51,8 @@ RuntimeDirectoryPreserve=yes
 # /opt/ThermaSol/SignaSteam.conf (the file QSettings writes, and that the
 # in-app orientation wizard updates before rebooting), writes the matching
 # rotation into /etc/qt5/eglfs_kms.json and QT_QPA_EGLFS_ROTATION into
-# /etc/qt5/rotation.env, and forces the panel backlight to full. The
+# /etc/qt5/rotation.env, and sets the panel backlight to the product
+# level (100/255, matching the kernel DT default and the app). The
 # EnvironmentFile= line is what feeds that rotation back into this unit, so
 # it must stay ahead of the ExecStartPre that regenerates it - systemd
 # reads EnvironmentFile at unit start, i.e. the value written by the
@@ -59,9 +60,13 @@ RuntimeDirectoryPreserve=yes
 # reboots the device.
 EnvironmentFile=-/etc/qt5/rotation.env
 ExecStartPre=/usr/bin/set-display-rotation.sh
-# Hand off the display from the boot splash to the app. "-" makes this
-# non-fatal if psplash isn't running.
-ExecStartPre=-/usr/bin/psplash-write "QUIT"
+# Deliberately NO "psplash-write QUIT" here. Quitting psplash before
+# ExecStart blanked the panel for the ~2 s Qt needs to draw its first frame
+# (measured: QUIT at 7.39 s, first frame ~9.5 s). psplash keeps the boot
+# logo on the framebuffer until the app has drawn, then the app itself
+# sends QUIT (main.cpp, shortly after MainWindow::show). psplash-systemd,
+# which would have quit it at "progress 1.0" (~8.9 s) regardless, is masked
+# in vtlinux-image-kiosk.inc for the same reason.
 ExecStart=/usr/bin/SignaSteam
 Restart=on-failure
 RestartSec=5

@@ -100,7 +100,10 @@ KIOSK_BASE_INSTALL = " \
 #      CAN      CONFIG_CAN / CAN_DEV / CAN_RAW / CAN_BCM /
 #               CAN_M_CAN_PLATFORM=y, PHY_CAN_TRANSCEIVER=y (ti,tcan1042)
 #      Display  CONFIG_DRM=y, DRM_TIDSS=y, DRM_MIPI_DSI=y,
-#               DRM_FBDEV_EMULATION=y, FB=y
+#               DRM_FBDEV_EMULATION=y, FB=y, and - via our
+#               linux-ti-staging bbappend - DRM_CDNS_DSI=y,
+#               PHY_CADENCE_DPHY=y, DRM_PANEL_SITRONIX_ST7701=y,
+#               BACKLIGHT_CLASS_DEVICE=y, BACKLIGHT_PWM=y
 #      Touch    CONFIG_TOUCHSCREEN_CHSC5XXX=y (chipsemi,chsc_cap_touch),
 #               INPUT_EVDEV=y
 #      Backlight CONFIG_PWM=y, PWM_TIECAP=y (the ecap0 provider)
@@ -133,14 +136,15 @@ KIOSK_BASE_INSTALL = " \
 # ---------------------------------------------------------------------------
 IMAGE_INSTALL:remove = "kernel-modules"
 
-# Display: DSI host + D-PHY + panel + backlight. Losing any one of these is
-# a black screen.
-KIOSK_MODULES_DISPLAY = " \
-    kernel-module-cdns-dsi \
-    kernel-module-cdns-dphy \
-    kernel-module-panel-sitronix-st7701 \
-    kernel-module-pwm-bl \
-"
+# Display: DSI host + D-PHY + panel + backlight. These used to be the four
+# modules cdns-dsi, cdns-dphy, panel-sitronix-st7701 and pwm-bl, and losing
+# any one of them was a black screen. They are now built into the kernel
+# (see the do_configure:prepend in recipes-kernel/linux/
+# linux-ti-staging_%.bbappend for the measurements): as modules, the panel
+# did not come up until ~14 s after kernel start because udev could not
+# get to them behind udev-extraconf's blocking RUN scripts. Built in, it
+# is up at ~2 s. Nothing to install here any more.
+KIOSK_MODULES_DISPLAY = ""
 
 # Sensors: the AM335x-compatible ADC (ti_am335x_adc on the tscadc MFD) and
 # the K3 bandgap temperature sensor that backs the SoC thermal zones - i.e.
@@ -281,8 +285,26 @@ IMAGE_ROOTFS_EXTRA_SPACE = "24576"
 #    battery expectation here and nothing in the app depends on wall-clock
 #    accuracy at startup; if that changes, unmask it - it is not on the
 #    critical path either way.
+#
+#    systemd-backlight@ saves the panel brightness at shutdown and restores
+#    it as soon as the backlight device appears. That is the wrong policy
+#    here: the kernel DT brings the panel up at the product level (100) and
+#    set-display-rotation.sh writes the same level before the app starts,
+#    so the restore only ever re-applied a stale value (confirmed
+#    on-device: a saved 255 from an older image lit the panel at full for
+#    the seconds between udev and the app). Masking the template masks
+#    every instance.
+#
+#    psplash-systemd watches systemd's boot progress over D-Bus and sends
+#    psplash QUIT when it reaches 1.0 - which on this image is the moment
+#    signatouch.service is "started" (Type=simple), ~2 s before the app has
+#    drawn anything. That blanked the panel between splash and app. The app
+#    quits psplash itself once its first frame is up, so this helper is
+#    masked; psplash-start stays.
 # ---------------------------------------------------------------------------
 KIOSK_MASKED_UNITS = " \
+    psplash-systemd.service \
+    systemd-backlight@.service \
     systemd-networkd-wait-online.service \
     systemd-timesyncd.service \
     systemd-resolved.service \

@@ -110,7 +110,8 @@ VENDOR_PACKAGES = " \
 # and Settings > Device > Orientation), it stores the choice as
 # orientationSelected in /opt/ThermaSol/SignaSteam.conf, and
 # set-display-rotation.sh is what turns that into the EGLFS rotation at the
-# next boot. It also forces the panel backlight to full brightness.
+# next boot. It also sets the panel backlight to the product level (100 of
+# 255 - the same value the kernel DT probes at and the app writes).
 APP_PACKAGES = " \
     signatouch \
     display-rotation \
@@ -142,10 +143,16 @@ APP_PACKAGES = " \
 #           difference this image had against the known-good IR image, and
 #           it buys nothing - the app polls on a timer and falls back to a
 #           default reading if the node isn't there yet.
+#   Tools   libiio-tests gives iio_info / iio_attr for checking the channel
+#           from a shell (Vantron's own ADC bring-up doc uses iio_info; an
+#           open channel 0 reads ~4093 = 1.8 V through the on-board pull-up).
+#           libiio is built local-backend only via our bbappend, so this is
+#           a few hundred KB, not the libusb/libxml2/avahi stack.
 SENSOR_PACKAGES = " \
     kernel-module-ti-am335x-adc \
     kernel-module-ti-am335x-tscadc \
     kernel-module-kfifo-buf \
+    libiio-tests \
 "
 
 CORE_IMAGE_EXTRA_INSTALL += " \

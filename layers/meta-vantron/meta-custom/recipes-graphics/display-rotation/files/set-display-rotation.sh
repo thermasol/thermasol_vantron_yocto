@@ -81,18 +81,25 @@ fi
 echo "EGLFS KMS configuration updated: ${EGLFS_CONFIG_FILE}"
 echo "Rotation environment file updated: ${ROTATION_ENV_FILE}"
 
-# The panel backlight probes at a very low default level (confirmed
-# on-device: brightness=6 out of max_brightness=255, no saved
-# systemd-backlight state involved) - the screen looks off even though
-# it's rendering. Force it to full brightness on every boot instead of
-# trusting the driver's probe-time default. Adjust the divisor below if
-# full brightness is too bright for the panel.
+# Panel backlight level for the product. The panel is 0-255 and full scale
+# is brighter than wanted and draws more current than needed; 100 is the
+# level the whole image agrees on: the kernel DT default-brightness-level
+# (so the panel probes at this level), this script (so a boot is never at
+# whatever the last shutdown left behind - systemd-backlight@ is masked in
+# the kiosk image for the same reason), and the SignaSteam app's own
+# backlight-on value. Keep the three in step if this changes. Note this is
+# a policy cap, not a driver cap: pwm-backlight maps the top of its
+# brightness-levels table to 100% duty whatever the table's size, so
+# max_brightness cannot be pegged from the device tree.
+BACKLIGHT_LEVEL=100
 for bl in /sys/class/backlight/*/; do
     [ -f "${bl}max_brightness" ] || continue
     max=$(cat "${bl}max_brightness")
+    level=${BACKLIGHT_LEVEL}
+    [ "${level}" -gt "${max}" ] && level=${max}
     echo 0 > "${bl}bl_power" 2>/dev/null || true
-    echo "${max}" > "${bl}brightness" 2>/dev/null || true
-    echo "Set backlight $(basename "${bl%/}") to brightness ${max}"
+    echo "${level}" > "${bl}brightness" 2>/dev/null || true
+    echo "Set backlight $(basename "${bl%/}") to brightness ${level} (max ${max})"
 done
 
 exit 0

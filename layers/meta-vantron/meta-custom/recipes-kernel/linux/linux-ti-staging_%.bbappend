@@ -6,6 +6,34 @@ SRC_URI = "git://git@github.com/harvia-dev/thermasol_kernel-ti-am62l.git;protoco
 SRCBRANCH = "vt-sbc-am62l"
 SRCREV = "1e8098a7ccba6f47094e0caf7ff9f0941d436ab4"
 
+# Panel backlight comes up at 100/255 from the kernel instead of full scale.
+# Every rootfs writer (set-display-rotation.sh, the SignaSteam app) uses the
+# same level, so 100 is the product's effective maximum. See the patch
+# header for why this is not a max_brightness cap.
+SRC_URI += "file://vt-sbc-am62l-backlight-default-brightness-100.patch"
+
+# ThermaSol boot logo. fbcon draws the compiled-in logo the moment the
+# framebuffer registers (~1.5 s after kernel start now that the display
+# chain is built in), which makes it the first thing on the panel. The file
+# is the kernel's own logo_linux_clut224.ppm slot, replaced wholesale: an
+# ASCII P3 PPM, <= 224 colours, generated from the wordmark
+# tsol_logo_305x27.png flattened onto black (fbcon has no alpha; the
+# console background is black) and padded to 308x27 so it is pixel-identical
+# to psplash's copy, which needs a width that is a multiple of 4. psplash then draws the same artwork at the
+# same centred position (see recipes-core/psplash), so the handoff is
+# invisible. The logo is drawn in the panel's native (portrait) orientation
+# and does not follow the app's orientation setting - on a landscape-mounted
+# unit it reads sideways for the ~7 s before the app starts.
+#
+# Placement and count come from the kernel command line, which U-Boot
+# passes via optargs (recipes-bsp/u-boot): fbcon=logo-pos:center centres
+# it, logo-count:1 stops fbcon drawing one copy per CPU (two on this SoC).
+SRC_URI += "file://logo_linux_clut224.ppm"
+
+# Copied into the source tree from do_configure below (do_patch is a python
+# task in patch.bbclass, so it cannot take a shell append). The logo .c is
+# generated from the .ppm at compile time, so configure is early enough.
+
 KBUILD_DEFCONFIG = "vt_sbc_am62l_defconfig"
 
 # Keep the unused fitImage out of the rootfs (~16 MB).
@@ -50,4 +78,36 @@ do_configure:prepend() {
     # boot logo prerequisites are all present but nothing is actually bound
     # to a VT to draw it. This is what shows the classic penguin logo.
     echo "CONFIG_FRAMEBUFFER_CONSOLE=y" >> ${WORKDIR}/defconfig
+
+    # Display chain built in, not as modules. Measured on-device: with
+    # cdns-dsi, cdns-dphy, the ST7701 panel and pwm-bl as modules, fb0 did
+    # not exist until ~13.9 s after kernel start. udev has to load them
+    # from the rootfs, and udev-extraconf's automount/autonet RUN scripts
+    # were tying up every udev worker from 7.3 s to 11.2 s, so nothing got
+    # loaded until then and tidss then sat in deferred probe until the
+    # 10 s deferred_probe_timeout released it. Built in, the panel probes
+    # inside the kernel at ~2 s: the boot logo shows immediately, psplash
+    # succeeds on its first attempt instead of crash-looping on a missing
+    # /dev/fb0, and the app no longer aborts on a missing /dev/dri/card0.
+    #
+    # BACKLIGHT_CLASS_DEVICE has to be =y as well: the defconfig already
+    # says BACKLIGHT_PWM=y and DRM_PANEL_SITRONIX_ST7701=y, but both depend
+    # on the class device, which was =m, so Kconfig demoted them to =m.
+    # KIOSK_MODULES_DISPLAY in vtlinux-image-kiosk.inc is emptied to match -
+    # the kernel-module-* packages no longer exist.
+    echo "CONFIG_BACKLIGHT_CLASS_DEVICE=y" >> ${WORKDIR}/defconfig
+    echo "CONFIG_BACKLIGHT_PWM=y" >> ${WORKDIR}/defconfig
+    echo "CONFIG_DRM_CDNS_DSI=y" >> ${WORKDIR}/defconfig
+    echo "CONFIG_PHY_CADENCE_DPHY=y" >> ${WORKDIR}/defconfig
+    echo "CONFIG_DRM_PANEL_SITRONIX_ST7701=y" >> ${WORKDIR}/defconfig
+
+    # Equivalent of "quiet" on the kernel command line, which U-Boot's
+    # bootcmd on this board gives us no hook for (it never loads
+    # uEnv.txt, and arm64 has no CMDLINE_EXTEND). The kernel printed 22 KB
+    # (328 lines) to the 115200-baud serial console before reaching init:
+    # about 1.9 s of a 2.9 s kernel boot. Warnings and errors still print.
+    echo "CONFIG_CONSOLE_LOGLEVEL_DEFAULT=4" >> ${WORKDIR}/defconfig
+
+    # ThermaSol boot logo - see the SRC_URI note above.
+    cp ${WORKDIR}/logo_linux_clut224.ppm ${S}/drivers/video/logo/logo_linux_clut224.ppm
 }

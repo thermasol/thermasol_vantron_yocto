@@ -123,7 +123,7 @@ The two products share this BSP and differ only in the application on top of it:
 |---|---|---|
 | Image | `vtlinux-image-signatouch-ir` | `vtlinux-image-signatouch` |
 | App recipe | `signatouch-ir` | `signatouch` |
-| App repo / branch | `SignaTouch_IR.git` @ `olivia_yocto` | `SignaSteam.git` @ `signa_olivia` |
+| App repo / branch | `SignaTouch_IR.git` @ `olivia_yocto` | `SignaSteam.git` @ `old_ui_Vantron` |
 | Binary | `/usr/bin/SignaTouch_IR` | `/usr/bin/SignaSteam` |
 | Extra Qt | `qtsvg` + `arcsliderplugin` | — (PNG/TTF resources only) |
 | Screen rotation | fixed landscape | user-selectable, persisted |
@@ -151,7 +151,9 @@ builds it from git and is the one to use.
 The app stores the user's choice as `orientationSelected` in `/opt/ThermaSol/SignaSteam.conf` (first-boot
 wizard, or Settings > Device > Orientation). At each boot `set-display-rotation.sh` (from the
 `display-rotation` recipe) reads it, writes `/etc/qt5/eglfs_kms.json` and
-`QT_QPA_EGLFS_ROTATION` into `/etc/qt5/rotation.env`, and forces the panel backlight to full brightness.
+`QT_QPA_EGLFS_ROTATION` into `/etc/qt5/rotation.env`, and sets the panel backlight to the product level (100 of 255; the kernel DT
+`default-brightness-level`, this script and the app all use 100, and `systemd-backlight@` is masked so a saved
+value is never restored over it).
 `signatouch.service` sources `rotation.env` at unit start, which is why changing the orientation in the app
 reboots the device.
 
@@ -167,7 +169,10 @@ The app reads a thermistor divider on ADC channel 0 via
 - `/etc/modules-load.d/ti-adc.conf`, shipped by the `signatouch` recipe, so the modules load at boot rather
   than depending on udev coldplug timing.
 
-Sanity check on target: `cat /sys/bus/iio/devices/iio:device0/in_voltage0_raw` should return a 0-4095 count.
+Sanity check on target: `cat /sys/bus/iio/devices/iio:device0/in_voltage0_raw` should return a 0-4095 count,
+or run `iio_info` (from `libiio-tests`, built local-backend only via our `libiio_%.bbappend`) to see both
+channels with their scale. Channel 0 has an on-board pull-up to 1.8 V, so with nothing connected it reads
+about 4093 (Vantron's ADC bring-up doc shows the same); channel 1 floats near 60.
 
 ### Output
 
@@ -186,7 +191,7 @@ The wiring lives in `layers/meta-vantron/meta-custom/recipes-core/psplash/psplas
 
 | PNG (in `recipes-core/psplash/files/`) | Package | Used by |
 |---|---|---|
-| `signatouch.png` | `psplash-signatouch` | `signatouch` recipe -> `vtlinux-image-signatouch` |
+| `signatouch.png` (ThermaSol wordmark, same image as the kernel boot logo) | `psplash-signatouch` | `signatouch` recipe -> `vtlinux-image-signatouch` |
 | `signatouch-ir.png` | `psplash-signatouch-ir` | `signatouch-ir` recipe -> `vtlinux-image-signatouch-ir` |
 | `yocto.png` | `psplash-default` | everything else (core, weston, qt5-minimal, factory) |
 

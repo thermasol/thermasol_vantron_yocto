@@ -1,0 +1,26 @@
+From: Eric Tanner <eric.tanner@harvia.com>
+Subject: [PATCH] am62lx: env: default optargs, hide the fbcon cursor
+
+args_mmc (include/env/ti/mmc.env) expands ${optargs} into bootargs, but
+nothing gives optargs a value and this board's bootcmd does not load
+uEnv.txt, so the kernel has always booted with none. The display now
+comes up inside the kernel and fbcon draws the boot logo on the panel:
+
+  vt.global_cursor_default=0   no text cursor blinking over the logo
+                               and over psplash
+  fbcon=logo-pos:center        centre the logo (where psplash draws the
+                               same artwork), not top-left
+  fbcon=logo-count:1           one logo, not one per online CPU
+
+Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+---
+--- a/board/ti/am62lx/am62lx.env
++++ b/board/ti/am62lx/am62lx.env
+@@ -30,6 +30,7 @@
+ 
+ name_kern=Image
+ console=ttyS0,115200n8
++optargs=vt.global_cursor_default=0 fbcon=logo-pos:center,logo-count:1
+ args_all=setenv optargs ${optargs} earlycon=ns16550a,mmio32,0x02800000
+ 	${mtdparts}
+ run_kern=booti ${loadaddr} ${rd_spec} ${fdtaddr}
