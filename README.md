@@ -182,6 +182,39 @@ build/deploy-ti/images/vt-sbc-am62l/vtlinux-image-signatouch-vtlinux-vt-sbc-am62
 
 Same layout and flashing procedure as the IR image above.
 
+### Service access on a shipped unit
+
+Production images are built without `debug-tweaks`: root has a password,
+there is no SSH server (the board has no network interface in this
+product), U-Boot does not accept a key to interrupt autoboot
+(`CONFIG_BOOTDELAY=-2`), and adbd is installed but not started at boot.
+
+**Serial console (UART).** UART0 at 115200 8N1 on the SBC's onboard
+CP2102N micro-USB bridge (not the pin header, that one is RS-485). Log in
+as `root`. The password is the SignaTouch service password; its SHA-512
+hash is `KIOSK_ROOT_PASSWORD_HASH` in `vtlinux-image-kiosk.inc` (generate
+a replacement with `openssl passwd -6`). The same password applies to the
+IR image.
+
+**ADB.** In the SignaTouch app go to Settings > Equipment > Diagnostics
+and tap the "Diagnostics" title at the top of the screen five times, each
+tap within two seconds of the last. Nothing is shown on screen. The app
+creates `/etc/usb-debugging-enabled` and starts
+`android-tools-adbd.service`; the marker persists, so ADB stays on for
+that unit across reboots. `adb shell` then gives a root shell over the
+USB gadget (on WSL the gadget, USB ID 18d1:d002, has to be attached with
+usbipd first). To turn it back off:
+`rm /etc/usb-debugging-enabled && systemctl stop android-tools-adbd`.
+The IR image keeps ADB on at boot.
+
+**Bench builds.** Put any of these in the gitignored `build/conf/site.conf`:
+
+```
+EXTRA_IMAGE_FEATURES = "debug-tweaks"                  # passwordless root, root login on every console
+KIOSK_ADB_AT_BOOT:pn-vtlinux-image-signatouch = "1"    # adbd up at boot without the gesture
+UBOOT_BOOTDELAY = "3"                                  # U-Boot prompt back
+```
+
 ## Updating the boot splash (psplash) logo
 
 Each product has its own splash. psplash compiles the PNG into the executable, and the base recipe
