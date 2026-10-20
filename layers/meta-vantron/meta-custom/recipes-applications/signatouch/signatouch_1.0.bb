@@ -34,8 +34,8 @@ SRC_URI = "git://git@github.com/thermasol/SignaSteam.git;protocol=ssh;branch=mas
            git://git@github.com/thermasol/ThermaCan.git;protocol=ssh;branch=master;name=thermacan;destsuffix=thermacan-src \
            file://signatouch.service \
           "
-# master after v2.0.0: v2.0.0 + the Diagnostics five-tap ADB enable and
-# the "Errors" button label. Tag the next release and update this note.
+# v2.0.1 - "SignaTouch 2.0.1": v2.0.0 plus the Diagnostics five-tap ADB
+# enable and the "Errors" button label.
 SRCREV_signasteam = "e376f46be672e1e9d3b41776e971dc6e15b99188"
 
 # ThermaCan master, shared with the signatouch-ir recipe - one CAN library
