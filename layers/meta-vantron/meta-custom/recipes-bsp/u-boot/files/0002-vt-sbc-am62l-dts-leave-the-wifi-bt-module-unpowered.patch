@@ -1,0 +1,47 @@
+From: Eric Tanner <eric.tanner@harvia.com>
+Subject: [PATCH] vt-sbc-am62l: dts: leave the AP6256 Wi-Fi/BT module unpowered
+
+U-Boot carries its own copy of the board DT, and like the kernel's it
+forced the Wi-Fi/BT module's load switch on from SPL: vcc_wifi was
+regulator-always-on + regulator-boot-on, GPIO_WIFI_EN was muxed with a
+pull-up, and sdhci2 was enabled so the SDIO host was bound (bootph-all)
+with that regulator as its vmmc.
+
+The product has no Wi-Fi or Bluetooth driver, so this only adds to the
+current the board draws during boot - and on a long 5 V cable the boot
+peak is what browns it out. Drop the flags, pull the enable down at the
+pad, and disable the SDIO host. The kernel side is the matching
+vt-sbc-am62l-leave-the-wifi-bt-module-unpowered.patch in
+recipes-kernel/linux.
+
+Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+---
+--- a/dts/upstream/src/arm64/ti/vt-sbc-am62l.dts
++++ b/dts/upstream/src/arm64/ti/vt-sbc-am62l.dts
+@@ -90,8 +90,6 @@
+ 		regulator-min-microvolt = <3300000>;
+ 		regulator-max-microvolt = <3300000>;
+ 		enable-active-high;
+-		regulator-always-on;
+-		regulator-boot-on;
+ 		startup-delay-us = <200000>;
+ 		gpio = <&main_gpio0 55 GPIO_ACTIVE_HIGH>;
+ 		pinctrl-names = "default";
+@@ -267,7 +265,7 @@
+ 	};
+ 	wifi_pwr_pins_default: wifi-pwr-default-pins {
+ 		pinctrl-single,pins = <
+-			AM62PX_IOPAD(0x0120, PIN_OUTPUT_PULLUP, 7) /* (AC10) RGMII1_TD0 GPIO_WIFI_EN*/
++			AM62PX_IOPAD(0x0120, PIN_OUTPUT_PULLDOWN, 7) /* (AC10) RGMII1_TD0 GPIO_WIFI_EN*/
+ 		>;
+ 	};
+ 	main_mcan0_pins_default: main-mcan0-default-pins {
+@@ -439,7 +437,7 @@
+ 	vmmc-supply = <&vcc_wifi>;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&main_mmc2_pins_default>;
+-	status = "okay";
++	status = "disabled";
+ 	bootph-all;
+ 	no-sd;
+ 	no-mmc;

@@ -13,6 +13,13 @@ comes up inside the kernel and fbcon draws the boot logo on the panel:
   fbcon=logo-count:1           one logo, not one per online CPU
 
 Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+  cpufreq.default_governor=ondemand
+                               the kernel's defconfig default is
+                               "performance"; with the A53 OPP table from
+                               recipes-kernel/linux (cpufreq through the
+                               SCMI clock) ondemand keeps the boot at the
+                               top OPP under load and lets the idle app
+                               sit at 600 MHz.
 ---
 --- a/board/ti/am62lx/am62lx.env
 +++ b/board/ti/am62lx/am62lx.env
@@ -20,7 +27,7 @@ Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
  
  name_kern=Image
  console=ttyS0,115200n8
-+optargs=vt.global_cursor_default=0 fbcon=logo-pos:center,logo-count:1
++optargs=vt.global_cursor_default=0 fbcon=logo-pos:center,logo-count:1 cpufreq.default_governor=ondemand
  args_all=setenv optargs ${optargs} earlycon=ns16550a,mmio32,0x02800000
  	${mtdparts}
  run_kern=booti ${loadaddr} ${rd_spec} ${fdtaddr}

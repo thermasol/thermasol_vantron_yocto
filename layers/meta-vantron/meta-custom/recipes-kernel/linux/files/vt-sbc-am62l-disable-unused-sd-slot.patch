@@ -1,0 +1,25 @@
+From: Eric Tanner <eric.tanner@harvia.com>
+Subject: [PATCH] arm64: dts: vt-sbc-am62l: disable the unused SD card slot in Linux
+
+The product has nothing in the SD slot and is flashed over USB (flash-tools),
+yet the kernel kept the slot powered (vdd_sd_dv, GPIO0_123 SD_PWR) and,
+because the slot has no card-detect line ("broken-cd"), polled it for a
+card every second for the life of the system - measured as ~3600 mmc1
+interrupts in the first five minutes and a permanently resident irq
+thread. Disable the controller in Linux; the rail then drops with it.
+U-Boot's DT copy is left alone so an SD card still works for recovery
+boots.
+
+Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+---
+--- a/arch/arm64/boot/dts/ti/vt-sbc-am62l.dtsi
++++ b/arch/arm64/boot/dts/ti/vt-sbc-am62l.dtsi
+@@ -318,7 +318,7 @@
+ 	vqmmc-supply = <&vdd_sd_dv>;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&main_mmc1_pins_default>;
+-	status = "okay";
++	status = "disabled";
+ 	bootph-all;
+ 	broken-cd;
+ 	no-sdio;

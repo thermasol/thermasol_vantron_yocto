@@ -1,0 +1,74 @@
+From: Eric Tanner <eric.tanner@harvia.com>
+Subject: [PATCH] arm64: dts: vt-sbc-am62l: A53 cpufreq through the SCMI clock
+
+The A53s run at a flat 1.25 GHz from reset to shutdown: the stock DT has no
+OPP table, the SCMI firmware exposes no perf domain, and ti-cpufreq knows
+nothing about AM62L3 in this tree. Both cores at full clock for the whole
+8 s boot is the bulk of the start-up current peak.
+
+Upstream (January 2026, "arm64: dts: ti: k3-am62l: support cpufreq") drives
+the cluster clock through SCMI clock 356 with a 200 MHz - 1.25 GHz OPP
+table (600 MHz floor here, see the DT comment). This does the same with a
+plain operating-points-v2 table so that cpufreq-dt (already =y) picks it up
+without ti-cpufreq. With cpufreq.default_governor=ondemand (U-Boot optargs)
+the boot still runs at the top OPP under load and the idle app drops to
+600 MHz. Verified on the bench board: Vantron's DM firmware (inside its
+tispl.bin) accepts the rate change on clock 356 and scaling_cur_freq
+follows the governor.
+Enabled from site.conf with
+  SRC_URI:append:pn-linux-ti-staging = " file://vt-sbc-am62l-a53-cpufreq-via-scmi.patch"
+
+Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+---
+--- a/arch/arm64/boot/dts/ti/vt-sbc-am62l.dtsi
++++ b/arch/arm64/boot/dts/ti/vt-sbc-am62l.dtsi
+@@ -242,6 +242,49 @@
+ 			gpios = <&main_gpio0 36 GPIO_ACTIVE_LOW>;
+ 		};
+ 	};
++
++	/*
++	 * A53 operating points, driven through the SCMI clock protocol the
++	 * DM firmware already exposes (clock 356 is the compute cluster's A53
++	 * clock in TI's AM62L clock table; the same ID upstream uses in
++	 * "arm64: dts: ti: k3-am62l: support cpufreq"). Plain
++	 * operating-points-v2 rather than the -ti-cpu variant: there is no
++	 * ti-cpufreq AM62L3 support in this 6.12 tree, and this part is
++	 * running at 1.25 GHz so every step below it is safe. VDD_CORE stays
++	 * at its fixed 0.75 V (no DVS on this PMIC rail), so this is DFS only.
++	 */
++	a53_opp_table: opp-table {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp-600000000 {
++			opp-hz = /bits/ 64 <600000000>;
++			clock-latency-ns = <6000000>;
++		};
++		opp-800000000 {
++			opp-hz = /bits/ 64 <800000000>;
++			clock-latency-ns = <6000000>;
++		};
++		opp-1000000000 {
++			opp-hz = /bits/ 64 <1000000000>;
++			clock-latency-ns = <6000000>;
++		};
++		opp-1250000000 {
++			opp-hz = /bits/ 64 <1250000000>;
++			clock-latency-ns = <6000000>;
++			opp-suspend;
++		};
++	};
++};
++
++&cpu0 {
++	clocks = <&scmi_clk 356>;
++	operating-points-v2 = <&a53_opp_table>;
++};
++
++&cpu1 {
++	clocks = <&scmi_clk 356>;
++	operating-points-v2 = <&a53_opp_table>;
+ };
+ 
+ &main_gpio0 {

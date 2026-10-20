@@ -1,0 +1,76 @@
+From: Eric Tanner <eric.tanner@harvia.com>
+Subject: [PATCH] arm64: dts: vt-sbc-am62l: leave the AP6256 Wi-Fi/BT module unpowered
+
+The product image ships no Wi-Fi or Bluetooth driver (vtlinux-image-kiosk.inc,
+KIOSK_WIFI / KIOSK_BLUETOOTH default "0"), but the device tree still forced
+the module's power on at every boot:
+
+  vcc_wifi   regulator-always-on + regulator-boot-on on GPIO_WIFI_EN, and
+             the pad was muxed with a pull-up, so the load switch was on
+             from the moment SPL applied the pinmux
+  bt_wake    regulator-always-on + regulator-boot-on on BT_WAKE_L
+  sdhci2     status "okay", so the SDIO host probed and power-cycled a
+             card nothing would ever drive
+
+Every milliamp of that lands on the 5 V feed during the boot-time current
+peak, which on a long cable is what browns the board out. Nothing is
+regained once booted either: no driver, no radio.
+
+Drop the always-on/boot-on flags so regulator-fixed drives both enables
+low at probe, disable the SDIO host, and pull WL_REG_ON, GPIO_WIFI_EN and
+BT_REG_ON down at the pad so the module cannot float on between SPL and
+the regulator probe.
+
+Units that need the radio (KIOSK_WIFI = "1") need this patch dropped as
+well; see the note next to the knob.
+
+Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+---
+--- a/arch/arm64/boot/dts/ti/vt-sbc-am62l.dtsi
++++ b/arch/arm64/boot/dts/ti/vt-sbc-am62l.dtsi
+@@ -137,8 +137,6 @@
+ 		regulator-max-microvolt = <3300000>;
+ 		enable-active-high;
+ 		startup-delay-us = <20000>;
+-		regulator-always-on;
+-		regulator-boot-on;
+ 		gpio = <&main_gpio0 55 GPIO_ACTIVE_HIGH>;
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&wifi_pwr_pins_default>;
+@@ -150,8 +148,6 @@
+ 		regulator-min-microvolt = <3300000>;
+ 		regulator-max-microvolt = <3300000>;
+ 		enable-active-high;
+-		regulator-always-on;
+-		regulator-boot-on;
+ 		gpio = <&main_gpio0 63 GPIO_ACTIVE_HIGH>;
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&bt_pwr_pins_default>;
+@@ -345,7 +341,7 @@
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+ 	wifi-detect-power-gpios = <&main_gpio0 12 GPIO_ACTIVE_HIGH>;
+-	status = "okay";
++	status = "disabled";
+ 
+ 	bcmdhd_wlan@1 {
+ 		reg = <1>;
+@@ -789,15 +785,15 @@
+ 	wifi_pwr_pins_default: wifi-pwr-default-pins {
+ 		bootph-all;
+ 		pinctrl-single,pins = <
+-			AM62LX_IOPAD(0x006c, PIN_OUTPUT, 7) /* () OSPI0_CSn1 wl_reg_on*/
+-			AM62PX_IOPAD(0x0120, PIN_OUTPUT_PULLUP, 7) /* (AC10) RGMII1_TD0 GPIO_WIFI_EN*/
++			AM62LX_IOPAD(0x006c, PIN_OUTPUT_PULLDOWN, 7) /* () OSPI0_CSn1 wl_reg_on*/
++			AM62PX_IOPAD(0x0120, PIN_OUTPUT_PULLDOWN, 7) /* (AC10) RGMII1_TD0 GPIO_WIFI_EN*/
+ 		>;
+ 	};
+ 	bt_pwr_pins_default: bt-pwr-default-pins {
+ 		bootph-all;
+ 		pinctrl-single,pins = <
+ 			AM62PX_IOPAD(0x0140, PIN_OUTPUT, 7) /* (AA8) RGMII1_RD2 BT_WAKE_L*/
+-			AM62PX_IOPAD(0x0144, PIN_OUTPUT, 7) /* (W8) RGMII1_RD3 BT_REG_ON_H*/
++			AM62PX_IOPAD(0x0144, PIN_OUTPUT_PULLDOWN, 7) /* (W8) RGMII1_RD3 BT_REG_ON_H*/
+ 		>;
+ 	};
+ 	wifi_32k_clk: wifi32k-clk-default-pins {

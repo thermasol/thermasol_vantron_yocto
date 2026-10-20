@@ -12,6 +12,58 @@ SRCREV = "1e8098a7ccba6f47094e0caf7ff9f0941d436ab4"
 # header for why this is not a max_brightness cap.
 SRC_URI += "file://vt-sbc-am62l-backlight-default-brightness-100.patch"
 
+# The SD slot is empty in the product and has no card-detect line, so
+# Linux kept its rail on and polled it every second forever. Off.
+SRC_URI += "file://vt-sbc-am62l-disable-unused-sd-slot.patch"
+
+# The AP6256 Wi-Fi/BT module has no driver in the product image but its
+# power was still forced on from SPL by the DT (regulator-always-on /
+# boot-on plus a pull-up on the enable pad). Leave it off. Mirrored in
+# U-Boot's DT copy (recipes-bsp/u-boot); both patches have to go for
+# KIOSK_WIFI / KIOSK_BLUETOOTH = "1" builds.
+SRC_URI += "file://vt-sbc-am62l-leave-the-wifi-bt-module-unpowered.patch"
+
+# A53 cpufreq through the SCMI clock: a 600 MHz - 1.25 GHz OPP table on the
+# cluster clock, which cpufreq-dt picks up. Stock has no OPP table and the
+# cores sit at 1.25 GHz forever. With cpufreq.default_governor=ondemand in
+# U-Boot's optargs the boot still runs flat out (ondemand goes to the top
+# OPP under load) and the idle app drops to 600 MHz. Verified on the bench
+# board: Vantron's DM firmware accepts the rate change.
+SRC_URI += "file://vt-sbc-am62l-a53-cpufreq-via-scmi.patch"
+
+# The 5 V long-cable reboot loop (stock image loops too). The probe of the
+# gpio_5v_en regulator closed the switched 5 V rail at ~0.75 s: ~0.75 A for
+# ~1 ms, board-side voltage to 3.8 V, input cut-out, cold restart every 4 s.
+# The patch leaves that rail and the unused SD IO rail off through the boot
+# and adds a regulator-output node so the 5 V rail can be switched from
+# userspace (`rail-5v on`, recipes-core/rail-5v) once the system is up.
+# Needs CONFIG_REGULATOR_USERSPACE_CONSUMER (do_configure below).
+SRC_URI += "file://vt-sbc-am62l-5v-rail-off-at-boot.patch"
+
+# The other boot-time step that trips the 5 V feed: the backlight boost's
+# ~0.5 A cold inrush, fired by pwm-backlight at display-on on top of the
+# panel's own surge. The driver patch gives regulator-fixed an optional
+# ramped (PWM) enable; the DT patch applies it to the backlight boost and
+# brings the panel up dark, so backlight-boot.service can raise it to the
+# product level a moment later, through the ramp, when nothing else is
+# switching. The 100/255 default-brightness patch above is superseded by
+# that: userspace owns the level now.
+SRC_URI += "file://0003-regulator-fixed-optional-GPIO-soft-start.patch"
+SRC_URI += "file://vt-sbc-am62l-backlight-soft-start.patch"
+
+# Brownout diagnostics: the PMIC driver prints at probe, on the serial
+# console, whether the PMIC lost its 5 V input since the flags were last
+# cleared, and clears them. One line per boot; tells a cable brownout from
+# any other reset.
+SRC_URI += "file://0001-mfd-tps65219-log-and-clear-POWER_UP_STATUS-at-probe.patch"
+
+# Real bug in TI's 6.12 tps65219 regulator driver: the per-IRQ data arrays
+# are allocated with the IRQ *count* as the byte size, so the probe writes
+# ~800 bytes past a 36-byte object on every boot. Seen on the bench as
+# random oopses right after it (omap_i2c, at24/nvmem) that left the unit
+# hung dark. Same fix as upstream 2025.
+SRC_URI += "file://0002-regulator-tps65219-fix-irq_data-allocation-size.patch"
+
 # ThermaSol boot logo. fbcon draws the compiled-in logo the moment the
 # framebuffer registers (~1.5 s after kernel start now that the display
 # chain is built in), which makes it the first thing on the panel. The file
@@ -107,6 +159,10 @@ do_configure:prepend() {
     # (328 lines) to the 115200-baud serial console before reaching init:
     # about 1.9 s of a 2.9 s kernel boot. Warnings and errors still print.
     echo "CONFIG_CONSOLE_LOGLEVEL_DEFAULT=4" >> ${WORKDIR}/defconfig
+
+    # Userspace switch for the 5 V rail (rail-5v regulator-output node in
+    # vt-sbc-am62l-5v-rail-off-at-boot.patch).
+    echo "CONFIG_REGULATOR_USERSPACE_CONSUMER=y" >> ${WORKDIR}/defconfig
 
     # ThermaSol boot logo - see the SRC_URI note above.
     cp ${WORKDIR}/logo_linux_clut224.ppm ${S}/drivers/video/logo/logo_linux_clut224.ppm

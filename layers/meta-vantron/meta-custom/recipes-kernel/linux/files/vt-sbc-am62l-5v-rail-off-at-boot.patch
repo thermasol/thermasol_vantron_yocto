@@ -1,0 +1,65 @@
+From: Eric Tanner <eric.tanner@harvia.com>
+Subject: [PATCH] arm64: dts: vt-sbc-am62l: leave the switched 5 V rail and the SD IO rail off through the boot
+
+The board reboot-loops when fed 5 V through a long (5 m, ~1.24 ohm) cable;
+the stock image does the same. Found by booting from the U-Boot prompt with
+device-tree nodes disabled one at a time, a Joulescope on the feed, at 5.0 V:
+with every GPIO-switched rail removed the board boots clean, and with only
+gpio_5v_en removed it boots too. That regulator's probe (~0.75 s into the
+kernel) closes the 5 V rail switch onto the capacitance behind it: ~0.75 A
+for ~1 ms, board-side voltage to 3.8 V, and the input stage cuts out at
+~4.2 V. It is a real turn-on, not a glitch (keeping the pad pull-up through
+the probe changes nothing), and the switch ramps on its own schedule, so no
+enable-pin pattern makes it fit in the ~450 mA the cable has to spare. The
+SD IO rail (vdd_sd_dv, unused slot) is the ~0.57 A step just before it.
+
+Both lose their boot-on flags: regulator-fixed then requests the enable low
+at probe and leaves the switch where power-on left it. The 5 V rail is
+switched from userspace instead, through a regulator-output node
+(/sys/devices/platform/rail-5v/state, wrapped by the rail-5v script), once
+the system is up and the supply can take the step. Everything else on the
+board (display, touch, UART, eMMC, PMIC) runs with it off.
+
+Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+---
+--- a/arch/arm64/boot/dts/ti/vt-sbc-am62l.dtsi
++++ b/arch/arm64/boot/dts/ti/vt-sbc-am62l.dtsi
+@@ -49,7 +49,7 @@
+ 		regulator-name = "vdd_sd_dv";
+ 		regulator-min-microvolt = <3300000>;
+ 		regulator-max-microvolt = <3300000>;
+-		regulator-boot-on;
++		/* SD slot unused (sdhci1 disabled): its IO rail stays off, a ~0.57 A step saved at boot. */
+ 		enable-active-high;
+ 		gpio = <&main_gpio0 123 GPIO_ACTIVE_HIGH>;
+ 		pinctrl-names = "default";
+@@ -85,12 +85,27 @@
+ 		regulator-min-microvolt = <5000000>;
+ 		regulator-max-microvolt = <5000000>;
+ 		enable-active-high;
+-		regulator-always-on;
+-		regulator-boot-on;
++		/*
++		 * Left OFF through the boot. The switch is off from power-on and
++		 * closing it is the one load step that browns the board out on
++		 * a long 5 V cable: ~0.75 A for ~1 ms into the capacitance
++		 * behind it, board-side voltage down to 3.8 V, input cut-out,
++		 * reboot loop (Joulescope, 5.0 V through 5 m / 1.24 ohm; the
++		 * board boots clean with this one probe skipped). The switch
++		 * ramps on its own schedule, so no enable pattern softens it.
++		 * It is switched from userspace instead (`rail-5v on`, the
++		 * regulator-output node below) when the supply can take it.
++		 */
+ 		gpio = <&main_gpio0 37 GPIO_ACTIVE_HIGH>;
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&gpio_pwr_pins_default>;
+ 	};
++
++	/* Userspace switch for the 5 V rail: /sys/devices/platform/rail-5v/state */
++	rail-5v {
++		compatible = "regulator-output";
++		vout-supply = <&gpio_5v_en>;
++	};
+ 	pmic_lpm_sel: pmic-lpm-sel {
+ 		bootph-all;
+ 		compatible = "regulator-fixed";

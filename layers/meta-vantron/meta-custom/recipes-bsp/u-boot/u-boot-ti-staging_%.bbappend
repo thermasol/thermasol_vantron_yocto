@@ -18,6 +18,14 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 # one copy per CPU.
 SRC_URI += "file://0001-am62lx-env-default-optargs-hide-the-fbcon-cursor.patch"
 
+# Keep the AP6256 Wi-Fi/BT module unpowered from SPL onwards. The image has
+# no driver for it, and its load switch was being turned on at every boot
+# (regulator-boot-on + a pull-up on the enable pad) for nothing - current
+# the 5 V feed cannot spare during the boot peak on a long cable. Mirrors
+# the kernel-side patch in recipes-kernel/linux; drop both for a build
+# with KIOSK_WIFI / KIOSK_BLUETOOTH = "1".
+SRC_URI += "file://0002-vt-sbc-am62l-dts-leave-the-wifi-bt-module-unpowered.patch"
+
 PACKAGECONFIG[ap-trusted-rom] = "BL1=${S}/prebuilt-images/am62lxx-evm/bl1.bin,,trusted-firmware-a"
 PACKAGECONFIG[atf] = "BL31=${S}/prebuilt-images/am62lxx-evm/bl31.bin,,trusted-firmware-a"
 PACKAGECONFIG[optee] = "TEE=${S}/prebuilt-images/am62lxx-evm/bl32.bin,,optee-os"

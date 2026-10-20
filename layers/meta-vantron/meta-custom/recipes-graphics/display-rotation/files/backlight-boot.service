@@ -1,0 +1,12 @@
+[Unit]
+Description=Raise the panel backlight to the product level after the splash is up
+After=psplash-start.service rail-5v.service
+Before=signatouch.service
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/backlight-boot.sh
+
+[Install]
+WantedBy=sysinit.target

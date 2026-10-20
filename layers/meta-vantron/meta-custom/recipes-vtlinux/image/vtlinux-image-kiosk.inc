@@ -29,6 +29,12 @@
 
 # Wi-Fi (AP6256 via bcmdhd) - wpa-supplicant, iw, regdb, firmware, and the
 # cfg80211/mac80211/bcmdhd modules. ~12 MB.
+#
+# NOTE: the module is also left *unpowered* by the device tree (kernel
+# patch vt-sbc-am62l-leave-the-wifi-bt-module-unpowered.patch and the
+# matching U-Boot 0002-... patch): no driver, so its power was going to
+# waste. Setting this or KIOSK_BLUETOOTH to "1" needs those two patches
+# dropped as well, or the radio will never enumerate.
 KIOSK_WIFI ?= "0"
 
 # Bluetooth (AP6256 via H4 UART) - bluez5 + brcm-patchram-plus. ~7 MB on its
@@ -288,7 +294,8 @@ IMAGE_ROOTFS_EXTRA_SPACE = "24576"
 #
 #    systemd-backlight@ saves the panel brightness at shutdown and restores
 #    it as soon as the backlight device appears. That is the wrong policy
-#    here: the kernel DT brings the panel up at the product level (100) and
+#    here: the kernel DT brings the panel up dark, backlight-boot.service raises
+#    it to the product level (100) once the splash is up, and
 #    set-display-rotation.sh writes the same level before the app starts,
 #    so the restore only ever re-applied a stale value (confirmed
 #    on-device: a saved 255 from an older image lit the panel at full for
@@ -301,9 +308,23 @@ IMAGE_ROOTFS_EXTRA_SPACE = "24576"
 #    drawn anything. That blanked the panel between splash and app. The app
 #    quits psplash itself once its first frame is up, so this helper is
 #    masked; psplash-start stays.
+#
+#    dhcpcd: there is no Ethernet on this board (cpsw3g is disabled in the
+#    DT) and no Wi-Fi driver, so the only interface it ever found was can0,
+#    on which it then ran DHCPv4/v6 (journal: "Dropped protocol specifier
+#    '.link' from 'can0.link'", "ipv6_addaddr1: Invalid argument"). Four
+#    processes and a few hundred ms of boot CPU for nothing;
+#    systemd-networkd owns can0.
+#
+#    busybox-syslog/klogd: journald already captures the kernel ring and
+#    syslog socket; klogd re-read and re-logged the entire dmesg into the
+#    journal at ~6.3 s (every kernel line appears twice in journalctl).
 # ---------------------------------------------------------------------------
 KIOSK_MASKED_UNITS = " \
     psplash-systemd.service \
+    dhcpcd.service \
+    busybox-syslog.service \
+    busybox-klogd.service \
     systemd-backlight@.service \
     systemd-networkd-wait-online.service \
     systemd-timesyncd.service \

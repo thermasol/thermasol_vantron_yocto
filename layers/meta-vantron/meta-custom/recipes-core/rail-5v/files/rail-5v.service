@@ -1,0 +1,18 @@
+[Unit]
+Description=Switch on the 5 V rail (CAN transceiver supply) before CAN is configured
+# The kernel leaves this rail off (its switch-on is the biggest load step the
+# board makes; see recipes-kernel/linux). Switch it on here, after the panel
+# is on and the splash is drawn, before the backlight comes up and before
+# systemd-networkd brings can0 up on the TCAN1042 that this rail powers.
+DefaultDependencies=no
+After=sysinit.target psplash-start.service
+Before=backlight-boot.service systemd-networkd.service network-pre.target
+Wants=network-pre.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/rail-5v on
+
+[Install]
+WantedBy=sysinit.target

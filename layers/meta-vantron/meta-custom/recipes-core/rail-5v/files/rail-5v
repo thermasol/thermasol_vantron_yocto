@@ -1,0 +1,12 @@
+#!/bin/sh
+# rail-5v: switch the board's GPIO-switched 5 V rail (gpio_5v_en, GPIO0_37).
+# The kernel leaves it off through the boot (see the device tree); turn it
+# on here once the system is up. Backed by the rail-5v regulator-output node.
+S=/sys/devices/platform/rail-5v/state
+[ -e "$S" ] || { echo "rail-5v: $S missing (regulator-output node not built in)" >&2; exit 1; }
+case "${1:-status}" in
+    on|enable|1)    echo enabled  > "$S" ;;
+    off|disable|0)  echo disabled > "$S" ;;
+    status)         cat "$S" ;;
+    *) echo "usage: rail-5v on|off|status" >&2; exit 2 ;;
+esac

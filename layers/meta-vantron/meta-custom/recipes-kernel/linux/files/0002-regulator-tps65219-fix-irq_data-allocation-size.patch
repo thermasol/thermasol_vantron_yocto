@@ -1,0 +1,54 @@
+From: Eric Tanner <eric.tanner@harvia.com>
+Subject: [PATCH] regulator: tps65219: fix irq_data allocation size (heap overflow at probe)
+
+tps65219_regulator_probe() allocates its per-IRQ data arrays with
+
+    irq_data = devm_kmalloc(tps->dev, pmic->common_irq_size, GFP_KERNEL);
+
+i.e. the NUMBER of IRQs in bytes, not the size of the array. On the
+TPS65214 that is a 36-byte allocation that the loop below then fills
+with 36 x 24 bytes of {dev, type, rdev} pointers, overwriting ~800 bytes
+of neighbouring slab objects on every boot, about 0.52 s into the kernel
+(right after the GPIO rails and before the EEPROM, I2C buses and panel).
+
+On the SignaTouch board this showed up as random oopses a few tens of
+milliseconds later in whatever happened to own the clobbered objects:
+
+  Unable to handle kernel paging request at virtual address 005f524f534e4573
+  pc : __kmalloc_cache_noprof  lr : __request_region  (omap_i2c_probe)
+  (the bogus "pointer" is the ASCII of a kthread name "irq/NN-SENSOR_2_WARM"
+   handed out twice from a corrupted kmalloc-32 freelist)
+
+  Unable to handle kernel execute from non-executable memory ffff000001fe0c20
+  lr : klist_node_init  (at24_probe -> nvmem_register -> device_add)
+
+With no watchdog running that early, each one leaves the unit hung dark.
+Allocate the arrays with the proper element size. Upstream fixed the same
+bug in 2025 ("regulator: tps65219: Fix devm_kmalloc size allocation").
+
+Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+---
+--- a/drivers/regulator/tps65219-regulator.c
++++ b/drivers/regulator/tps65219-regulator.c
+@@ -436,7 +436,9 @@
+ 					     pmic->rdesc[i].name);
+ 	}
+ 
+-	irq_data = devm_kmalloc(tps->dev, pmic->common_irq_size, GFP_KERNEL);
++	irq_data = devm_kmalloc(tps->dev,
++				pmic->common_irq_size * sizeof(*irq_data),
++				GFP_KERNEL);
+ 	if (!irq_data)
+ 		return -ENOMEM;
+ 
+@@ -459,7 +461,9 @@
+ 					     irq_type->irq_name, irq, error);
+ 	}
+ 
+-	irq_data = devm_kmalloc(tps->dev, pmic->dev_irq_size, GFP_KERNEL);
++	irq_data = devm_kmalloc(tps->dev,
++				pmic->dev_irq_size * sizeof(*irq_data),
++				GFP_KERNEL);
+ 	if (!irq_data)
+ 		return -ENOMEM;
+ 

@@ -1,0 +1,142 @@
+From: Eric Tanner <eric.tanner@harvia.com>
+Subject: [PATCH] regulator: fixed: optional GPIO soft-start (vantron,soft-start-pulses)
+
+A fixed regulator whose enable GPIO drives a converter with no soft-start
+of its own dumps that converter's cold inrush onto the supply in one step.
+On the SignaTouch board the panel backlight boost (3.3 V fed, SOT23-6) draws
+about 0.5 A for a millisecond when enabled cold, and on a 5 V feed through
+a 5 m cable that step, on top of the panel's own display-on surge, is enough
+to trip the input stage and reboot the board.
+
+With "vantron,soft-start-pulses = <N>" (and an optional
+"vantron,soft-start-period-us", default 50) the driver keeps the GPIO
+itself, requests it low at probe, and enables by pulsing it with a duty
+cycle that rises from ~0 to 100 % over N periods, so the converter charges
+its output in small increments the feed can follow. Busy-waits for the
+ramp (20 ms at 400 x 50 us). Without the property the driver is unchanged.
+
+Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+---
+--- a/drivers/regulator/fixed.c
++++ b/drivers/regulator/fixed.c
+@@ -29,6 +29,7 @@
+ #include <linux/regulator/of_regulator.h>
+ #include <linux/regulator/machine.h>
+ #include <linux/clk.h>
++#include <linux/delay.h>
+ 
+ /* Default time in millisecond to wait for emergency shutdown */
+ #define FV_DEF_EMERG_SHUTDWN_TMO	10
+@@ -40,6 +41,12 @@
+ 	struct clk *enable_clock;
+ 	unsigned int enable_counter;
+ 	int performance_state;
++
++	/* GPIO soft-start (vantron,soft-start-pulses): see softstart ops */
++	struct gpio_desc *ss_gpiod;
++	u32 ss_pulses;
++	u32 ss_period_us;
++	bool ss_on;
+ };
+ 
+ struct fixed_dev_type {
+@@ -207,6 +214,59 @@
+ static const struct regulator_ops fixed_voltage_ops = {
+ };
+ 
++/*
++ * Soft-started GPIO enable. A plain edge on the enable of a load switch
++ * dumps the load's input capacitance onto the rail in one step; on this
++ * board, fed 5 V through a long cable, that step is enough to drive the
++ * input stage into a cut-out (measured: a ~120 us current ramp to 0.5-0.8 A
++ * at every rail enable, and a reset at the biggest). Instead, pulse the
++ * enable with a duty cycle that rises from ~0 to 100 % over
++ * ss_pulses * ss_period_us, so the switch spends the first milliseconds
++ * mostly off and the load charges in small increments the input can
++ * follow. Busy-waits for the whole ramp (10 ms at 200 x 50 us), which is
++ * acceptable at probe time.
++ */
++static int reg_softstart_enable(struct regulator_dev *rdev)
++{
++	struct fixed_voltage_data *priv = rdev_get_drvdata(rdev);
++	u32 k, on;
++
++	for (k = 1; k < priv->ss_pulses; k++) {
++		on = max_t(u32, 1, priv->ss_period_us * k / priv->ss_pulses);
++		gpiod_set_value(priv->ss_gpiod, 1);
++		udelay(on);
++		if (on < priv->ss_period_us) {
++			gpiod_set_value(priv->ss_gpiod, 0);
++			udelay(priv->ss_period_us - on);
++		}
++	}
++	gpiod_set_value(priv->ss_gpiod, 1);
++	priv->ss_on = true;
++	return 0;
++}
++
++static int reg_softstart_disable(struct regulator_dev *rdev)
++{
++	struct fixed_voltage_data *priv = rdev_get_drvdata(rdev);
++
++	gpiod_set_value(priv->ss_gpiod, 0);
++	priv->ss_on = false;
++	return 0;
++}
++
++static int reg_softstart_is_enabled(struct regulator_dev *rdev)
++{
++	struct fixed_voltage_data *priv = rdev_get_drvdata(rdev);
++
++	return priv->ss_on;
++}
++
++static const struct regulator_ops fixed_voltage_softstart_ops = {
++	.enable = reg_softstart_enable,
++	.disable = reg_softstart_disable,
++	.is_enabled = reg_softstart_is_enabled,
++};
++
+ static const struct regulator_ops fixed_voltage_clkenabled_ops = {
+ 	.enable = reg_clock_enable,
+ 	.disable = reg_clock_disable,
+@@ -318,10 +378,35 @@
+ 	 * Do not use devm* here: the regulator core takes over the
+ 	 * lifecycle management of the GPIO descriptor.
+ 	 */
+-	cfg.ena_gpiod = gpiod_get_optional(&pdev->dev, NULL, gflags);
+-	if (IS_ERR(cfg.ena_gpiod))
+-		return dev_err_probe(&pdev->dev, PTR_ERR(cfg.ena_gpiod),
+-				     "can't get GPIO\n");
++	if (!of_property_read_u32(pdev->dev.of_node, "vantron,soft-start-pulses",
++				  &drvdata->ss_pulses) && drvdata->ss_pulses) {
++		/*
++		 * Soft-started enable: keep the GPIO ourselves, request it
++		 * low, and let the regulator core's boot-on / always-on
++		 * handling call our ramped enable from regulator_register().
++		 */
++		if (of_property_read_u32(pdev->dev.of_node,
++					 "vantron,soft-start-period-us",
++					 &drvdata->ss_period_us) ||
++		    !drvdata->ss_period_us)
++			drvdata->ss_period_us = 50;
++		drvdata->ss_gpiod = devm_gpiod_get_optional(&pdev->dev, NULL,
++				GPIOD_OUT_LOW | GPIOD_FLAGS_BIT_NONEXCLUSIVE);
++		if (IS_ERR(drvdata->ss_gpiod))
++			return dev_err_probe(&pdev->dev, PTR_ERR(drvdata->ss_gpiod),
++					     "can't get GPIO\n");
++		if (drvdata->ss_gpiod) {
++			drvdata->desc.ops = &fixed_voltage_softstart_ops;
++			dev_info(&pdev->dev, "%s: GPIO soft-start %u x %u us\n",
++				 drvdata->desc.name, drvdata->ss_pulses,
++				 drvdata->ss_period_us);
++		}
++	} else {
++		cfg.ena_gpiod = gpiod_get_optional(&pdev->dev, NULL, gflags);
++		if (IS_ERR(cfg.ena_gpiod))
++			return dev_err_probe(&pdev->dev, PTR_ERR(cfg.ena_gpiod),
++					     "can't get GPIO\n");
++	}
+ 
+ 	cfg.dev = &pdev->dev;
+ 	cfg.init_data = config->init_data;

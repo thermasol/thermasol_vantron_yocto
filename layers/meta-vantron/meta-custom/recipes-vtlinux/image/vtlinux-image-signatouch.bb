@@ -89,10 +89,15 @@ CORE_PACKAGES = " \
 # the resistive-touch calibration stack, unused here (the chsc5xxx
 # controller reports absolute multitouch straight to evdev and Qt's
 # eglfs/linuxfb input plugin reads evdev directly).
+#
+# rail-5v: the switched 5 V rail stays off through the boot (closing that
+# switch is what browned the board out on a long 5 V cable, see
+# recipes-kernel/linux); `rail-5v on|off|status` drives it from userspace.
 HARDWARE_PACKAGES = " \
     hardwatchdog \
     hardwatchdog-script \
     udev-extraconf \
+    rail-5v \
 "
 
 # Vendor libraries. libvtcom-dev is a -dev package (headers and the
