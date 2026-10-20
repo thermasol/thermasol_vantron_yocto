@@ -16,7 +16,16 @@ StartLimitIntervalSec=0
 
 [Service]
 Type=notify
-ExecStart=/usr/bin/psplash
+# -n (no console switch): psplash must NOT put the VT into graphics mode,
+# because it then restores text mode when it exits. The app quits psplash
+# after its first frame (main.cpp, psplash-write QUIT); the KD_TEXT restore
+# re-activates fbcon, and the DRM fbdev helper puts fbcon's framebuffer
+# back on the CRTC on top of the app's - the panel goes black while the app
+# keeps running and drawing into a buffer nobody scans out. Verified on
+# the board via /sys/kernel/debug/dri/0/state: plane fb flips from the
+# SignaSteam framebuffer to the [fbcon] one at QUIT without -n, stays
+# with -n. Qt eglfs does its own KD_GRAPHICS switch, so nothing is lost.
+ExecStart=/usr/bin/psplash -n
 RemainAfterExit=yes
 Restart=on-failure
 RestartSec=1
