@@ -18,18 +18,24 @@ RDEPENDS:${PN} += "qtbase qtbase-plugins display-rotation psplash-signatouch"
 # page is a no-op. Revisit if field Wi-Fi provisioning is needed.
 RDEPENDS:${PN} += "busybox"
 
-# The product repo is still named SignaSteam upstream. old_ui_Vantron is the
-# current production UI brought up on the Vantron AM62L board: the branch
-# point of signa_olivia plus the low-level pieces from it that the new
-# hardware needs (vendored ThermaCan headers, panel backlight level,
-# first-boot orientation wizard and synced orientation reboot). signa_olivia
-# is the new UI for the same board; switch the branch and SRCREV back to it
-# once it is production-ready.
-SRC_URI = "git://git@github.com/thermasol/SignaSteam.git;protocol=ssh;branch=old_ui_Vantron;name=signasteam;destsuffix=git \
+# The product repo is still named SignaSteam upstream. master is the
+# production line for the Vantron AM62L board: the signa_olivia UI was
+# merged into it for the 2.0.0 release and development continues on master.
+# old_ui_Vantron is the previous UI on the same hardware (the branch point
+# of signa_olivia plus the low-level pieces the new hardware needs: vendored
+# ThermaCan headers, panel backlight level, first-boot orientation wizard
+# and synced orientation reboot). Low-level fixes get ported both ways; to
+# ship the old UI again, switch the branch and SRCREV back to old_ui_Vantron.
+#
+# Release builds pin SRCREV to the commit a release tag points at (BitBake
+# needs the commit hash, not the tag name, to stay offline-reproducible).
+# For day-to-day work site.conf can override this with AUTOREV.
+SRC_URI = "git://git@github.com/thermasol/SignaSteam.git;protocol=ssh;branch=master;name=signasteam;destsuffix=git \
            git://git@github.com/thermasol/ThermaCan.git;protocol=ssh;branch=master;name=thermacan;destsuffix=thermacan-src \
            file://signatouch.service \
           "
-SRCREV_signasteam = "58218fed366b269629d57d21f010f5a19ddc1bf5"
+# v2.0.0 - "SignaTouch 2.0.0"
+SRCREV_signasteam = "e7bf8ce13c9a42474244927e90943e67375b8577"
 
 # ThermaCan master, shared with the signatouch-ir recipe - one CAN library
 # revision across both products.
