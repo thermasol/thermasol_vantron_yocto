@@ -34,9 +34,10 @@ SRC_URI = "git://git@github.com/thermasol/SignaSteam.git;protocol=ssh;branch=mas
            git://git@github.com/thermasol/ThermaCan.git;protocol=ssh;branch=master;name=thermacan;destsuffix=thermacan-src \
            file://signatouch.service \
           "
-# v2.0.1 - "SignaTouch 2.0.1": v2.0.0 plus the Diagnostics five-tap ADB
-# enable and the "Errors" button label.
-SRCREV_signasteam = "e376f46be672e1e9d3b41776e971dc6e15b99188"
+# v2.0.2 - "SignaTouch 2.0.2": the hidden five-tap ADB enable now sits on
+# the Diagnostics title label (v2.0.1 had it on the bottom strip), plus
+# the "Errors" button label from v2.0.1.
+SRCREV_signasteam = "715af2b8738da43125af8a4d83b741d9b7e0c355"
 
 # ThermaCan master, shared with the signatouch-ir recipe - one CAN library
 # revision across both products.
