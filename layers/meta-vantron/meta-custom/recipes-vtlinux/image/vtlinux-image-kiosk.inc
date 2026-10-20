@@ -57,8 +57,25 @@ KIOSK_DEBUG_TOOLS ?= "0"
 # because this is the service access path to a unit with no keyboard and no
 # getty on the display - "adb shell" is how the board gets looked at in the
 # field. ~1.5 MB for adbd + the gadget config + the usb_f_fs/libcomposite
-# modules. Set to "0" for a locked-down production build.
+# modules. Set to "0" to leave adbd out of the image altogether.
 KIOSK_ADB ?= "1"
+
+# Whether adbd comes up at boot. android-tools-adbd.service has
+# ConditionPathExists=/etc/usb-debugging-enabled, and android-tools-conf-ti
+# ships that marker. adbd has no authentication on this (non-Android) build,
+# so with the marker present anyone with a USB cable has a root shell. "0"
+# removes the marker from the rootfs: the daemon is installed and enabled
+# but skipped at boot until something on the device creates the marker and
+# starts the unit (the SignaTouch app does this from a hidden gesture on
+# its Diagnostics screen). Once created the marker persists, so the unit
+# is back at the next boot too.
+KIOSK_ADB_AT_BOOT ?= "1"
+
+# Root's password. debug-tweaks is off in local.conf, so without this root
+# would be locked out of the serial console entirely. SHA-512 crypt hash
+# (openssl passwd -6); the plaintext is not in the tree. Override in
+# site.conf to rotate it.
+KIOSK_ROOT_PASSWORD_HASH ?= "$6$GYtfrAGxLUvP1j7i$/VjCspC2LSVHlSr5nEWioltigYDQi3UMbwydcSlsdU2vUnc/tYO8tHd/6rYOpoLlT90K0LgqEN3fcKyDEIDOH0"
 
 # apt/dpkg on target (IMAGE_FEATURES "package-management"). Costs ~25 MB
 # (apt, dpkg, perl, gnupg, apt-conf) and adds run-postinsts.service to the
@@ -215,6 +232,19 @@ KIOSK_DEBUG_INSTALL = "${@bb.utils.contains('KIOSK_DEBUG_TOOLS', '1', \
 # the USB gadget configfs setup the usb_f_fs/libcomposite modules back.
 KIOSK_ADB_INSTALL = "${@bb.utils.contains('KIOSK_ADB', '1', \
     'android-tools-adbd android-tools-conf-ti', '', d)}"
+
+# See KIOSK_ADB_AT_BOOT.
+kiosk_adb_boot_marker () {
+    if [ "${KIOSK_ADB_AT_BOOT}" != "1" ]; then
+        rm -f ${IMAGE_ROOTFS}${sysconfdir}/usb-debugging-enabled
+    fi
+}
+ROOTFS_POSTPROCESS_COMMAND += "kiosk_adb_boot_marker;"
+
+# See KIOSK_ROOT_PASSWORD_HASH. The hash is single-quoted so its $ signs
+# reach usermod intact.
+inherit extrausers
+EXTRA_USERS_PARAMS += "usermod -p '${KIOSK_ROOT_PASSWORD_HASH}' root;"
 
 IMAGE_FEATURES += "${@bb.utils.contains('KIOSK_PKG_MANAGEMENT', '1', 'package-management', '', d)}"
 

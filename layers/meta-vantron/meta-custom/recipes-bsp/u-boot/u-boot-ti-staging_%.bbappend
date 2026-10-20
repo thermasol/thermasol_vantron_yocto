@@ -26,6 +26,20 @@ SRC_URI += "file://0001-am62lx-env-default-optargs-hide-the-fbcon-cursor.patch"
 # with KIOSK_WIFI / KIOSK_BLUETOOTH = "1".
 SRC_URI += "file://0002-vt-sbc-am62l-dts-leave-the-wifi-bt-module-unpowered.patch"
 
+# Autoboot abort. The defconfig has CONFIG_BOOTDELAY=0, which still lets a
+# key held on the serial console during boot drop into the U-Boot prompt
+# (from where init=/bin/sh is one line away). -2 is U-Boot's "no delay, do
+# not check for a key": the production console cannot interrupt the boot.
+# Reflashing still works, the flash tools boot the stock loader over USB
+# DFU and never touch this. Set "3" in site.conf for a bench build where
+# you want the prompt back (the hand-boot bisect in the kernel notes).
+UBOOT_BOOTDELAY ?= "-2"
+do_configure:prepend() {
+    sed -i 's/^CONFIG_BOOTDELAY=.*/CONFIG_BOOTDELAY=${UBOOT_BOOTDELAY}/' ${S}/configs/${UBOOT_MACHINE}
+    grep -q '^CONFIG_BOOTDELAY=${UBOOT_BOOTDELAY}$' ${S}/configs/${UBOOT_MACHINE} || \
+        bbfatal "CONFIG_BOOTDELAY not set in ${UBOOT_MACHINE}"
+}
+
 PACKAGECONFIG[ap-trusted-rom] = "BL1=${S}/prebuilt-images/am62lxx-evm/bl1.bin,,trusted-firmware-a"
 PACKAGECONFIG[atf] = "BL31=${S}/prebuilt-images/am62lxx-evm/bl31.bin,,trusted-firmware-a"
 PACKAGECONFIG[optee] = "TEE=${S}/prebuilt-images/am62lxx-evm/bl32.bin,,optee-os"

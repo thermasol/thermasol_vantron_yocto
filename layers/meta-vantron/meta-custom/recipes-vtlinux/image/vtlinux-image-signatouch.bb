@@ -11,9 +11,15 @@ inherit core-image
 # knob costs and for the phase-2 items that are deliberately left off.
 require vtlinux-image-kiosk.inc
 
-IMAGE_FEATURES += " \
-    ssh-server-openssh \
-"
+# No SSH server: the board has no network interface in this product (no
+# Ethernet, Wi-Fi driver not shipped), so sshd was ~5 MB of listener with
+# nothing to listen on, and one more root login path to account for.
+#
+# ADB stays installed for field service but does not come up at boot:
+# tapping the bottom of the app's Diagnostics screen five times creates
+# /etc/usb-debugging-enabled and starts adbd, with no on-screen feedback.
+# The marker persists, so ADB stays available on that unit from then on.
+KIOSK_ADB_AT_BOOT = "0"
 
 # Essential Qt5 packages for Widgets application. No qtsvg: SignaSteam's
 # resources.qrc is PNG and TTF only (the IR image needs it for
