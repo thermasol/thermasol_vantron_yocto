@@ -241,10 +241,14 @@ kiosk_adb_boot_marker () {
 }
 ROOTFS_POSTPROCESS_COMMAND += "kiosk_adb_boot_marker;"
 
-# See KIOSK_ROOT_PASSWORD_HASH. The hash is single-quoted so its $ signs
-# reach usermod intact.
+# See KIOSK_ROOT_PASSWORD_HASH. useradd_base's perform_usermod evals the
+# command through a double-quoted string, so a bare $6$salt$ is expanded
+# away by the shell (seen: the image shipped "$/VjCs..." as root's hash).
+# Escape every $ as \$ here, which the eval turns back into a literal $
+# inside the single quotes usermod sees. Keep KIOSK_ROOT_PASSWORD_HASH
+# itself unescaped.
 inherit extrausers
-EXTRA_USERS_PARAMS += "usermod -p '${KIOSK_ROOT_PASSWORD_HASH}' root;"
+EXTRA_USERS_PARAMS += "usermod -p '${@d.getVar('KIOSK_ROOT_PASSWORD_HASH').replace('$', '\\$')}' root;"
 
 IMAGE_FEATURES += "${@bb.utils.contains('KIOSK_PKG_MANAGEMENT', '1', 'package-management', '', d)}"
 
