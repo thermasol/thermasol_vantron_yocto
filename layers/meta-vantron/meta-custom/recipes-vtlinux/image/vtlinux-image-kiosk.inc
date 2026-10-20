@@ -239,7 +239,7 @@ kiosk_adb_boot_marker () {
         rm -f ${IMAGE_ROOTFS}${sysconfdir}/usb-debugging-enabled
     fi
 }
-ROOTFS_POSTPROCESS_COMMAND += "kiosk_adb_boot_marker;"
+ROOTFS_POSTPROCESS_COMMAND += "kiosk_adb_boot_marker ; "
 
 # See KIOSK_ROOT_PASSWORD_HASH. useradd_base's perform_usermod evals the
 # command through a double-quoted string, so a bare $6$salt$ is expanded
@@ -368,7 +368,7 @@ KIOSK_MASKED_UNITS = " \
     crond.service \
 "
 
-ROOTFS_POSTPROCESS_COMMAND += "kiosk_mask_units; "
+ROOTFS_POSTPROCESS_COMMAND += "kiosk_mask_units ; "
 
 kiosk_mask_units () {
     install -d ${IMAGE_ROOTFS}${sysconfdir}/systemd/system

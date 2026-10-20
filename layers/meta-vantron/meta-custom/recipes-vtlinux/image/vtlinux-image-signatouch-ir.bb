@@ -142,7 +142,7 @@ rootfs_versions () {
 # banner and "login:" prompt right over whatever psplash/the app drew
 # there (confirmed on-device with SignaSteam). Serial debug access via
 # ttyS0 is unaffected since it's a separate console.
-ROOTFS_POSTPROCESS_COMMAND += "mask_display_getty; "
+ROOTFS_POSTPROCESS_COMMAND += "mask_display_getty ; "
 
 mask_display_getty () {
     install -d ${IMAGE_ROOTFS}/etc/systemd/system
