@@ -191,9 +191,9 @@ product), U-Boot does not accept a key to interrupt autoboot
 
 **Serial console (UART).** UART0 at 115200 8N1 on the SBC's onboard
 CP2102N micro-USB bridge (not the pin header, that one is RS-485). Log in
-as `root`. The password is the SignaTouch service password; its SHA-512
-hash is `KIOSK_ROOT_PASSWORD_HASH` in `vtlinux-image-kiosk.inc` (generate
-a replacement with `openssl passwd -6`). The same password applies to the
+as `root`, password `steamy17%`. The SHA-512 hash of it is
+`KIOSK_ROOT_PASSWORD_HASH` in `vtlinux-image-kiosk.inc` (generate a
+replacement with `openssl passwd -6`). The same password applies to the
 IR image.
 
 **ADB.** In the SignaTouch app go to Settings > Equipment > Diagnostics
