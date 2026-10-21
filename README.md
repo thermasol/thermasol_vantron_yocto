@@ -169,6 +169,13 @@ The app reads a thermistor divider on ADC channel 0 via
 - `/etc/modules-load.d/ti-adc.conf`, shipped by the `signatouch` recipe, so the modules load at boot rather
   than depending on udev coldplug timing.
 
+The sensor is a single-ended epoxy NTC, 100 kohm at 25 C, B = 3950 K, on the low side of a divider with
+the board's 100 kohm pull-up to the 1.8 V ADC reference. The app (`EquipmentCanInterface`) solves the
+divider for the thermistor resistance and applies the beta equation, so 25 C reads at mid-scale (raw ~2048),
+10 C near 2740 and 40 C near 1420. The device tree gives the ADC a long sample delay and 16x averaging on
+that channel (`vt-sbc-am62l-adc-step-delays.patch`) because the divider's ~50 kohm source impedance is far
+above what the sample-and-hold settles on with the driver defaults.
+
 Sanity check on target: `cat /sys/bus/iio/devices/iio:device0/in_voltage0_raw` should return a 0-4095 count,
 or run `iio_info` (from `libiio-tests`, built local-backend only via our `libiio_%.bbappend`) to see both
 channels with their scale. Channel 0 has an on-board pull-up to 1.8 V, so with nothing connected it reads

@@ -1,0 +1,26 @@
+From: Eric Tanner <eric.tanner@harvia.com>
+Subject: [PATCH] arm64: dts: vt-sbc-am62l: give the ADC time to settle on a 100k thermistor divider
+
+The room temperature sensor on ADC channel 0 is a 100 kohm NTC against
+the board's 100 kohm pull-up, so the ADC sees up to ~50 kohm of source
+impedance. The driver's defaults (open delay 0x98, sample delay 0) give
+the sample-and-hold capacitor essentially one ADC clock to charge
+through that, which reads low and noisy. Set a long sample delay
+(0xff clocks, ~85 us at 3 MHz), keep the open delay, and average 16
+samples per step. Channel 1 is unused but gets the same so the two
+steps behave alike.
+
+Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+---
+--- a/arch/arm64/boot/dts/ti/vt-sbc-am62l.dtsi
++++ b/arch/arm64/boot/dts/ti/vt-sbc-am62l.dtsi
+@@ -615,6 +615,9 @@
+ 
+ 	adc {
+ 		ti,adc-channels = <0 1>;
++		ti,chan-step-avg = <16 16>;
++		ti,chan-step-opendelay = <0x98 0x98>;
++		ti,chan-step-sampledelay = <0xff 0xff>;
+ 	};
+ };
+ 

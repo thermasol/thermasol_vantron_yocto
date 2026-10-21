@@ -12,6 +12,12 @@ SRCREV = "1e8098a7ccba6f47094e0caf7ff9f0941d436ab4"
 # header for why this is not a max_brightness cap.
 SRC_URI += "file://vt-sbc-am62l-backlight-default-brightness-100.patch"
 
+# Room temperature NTC: 100k thermistor against a 100k pull-up on ADC
+# channel 0 is ~50k of source impedance; the driver's default sample
+# delay of 0 gives the sample-and-hold no time to charge through that.
+# Long sample delay plus 16x averaging on both steps.
+SRC_URI += "file://vt-sbc-am62l-adc-step-delays.patch"
+
 # The SD slot is empty in the product and has no card-detect line, so
 # Linux kept its rail on and polled it every second forever. Off.
 SRC_URI += "file://vt-sbc-am62l-disable-unused-sd-slot.patch"
