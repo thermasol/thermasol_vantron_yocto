@@ -11,9 +11,14 @@ inherit core-image
 # knob costs and for the phase-2 items that are deliberately left off.
 require vtlinux-image-kiosk.inc
 
-IMAGE_FEATURES += " \
-    ssh-server-openssh \
-"
+# No SSH server: the board has no network interface in this product (no
+# Ethernet, Wi-Fi driver not shipped), so sshd was a listener with nothing
+# to listen on and one more root login path to account for.
+#
+# ADB stays up at boot on this product (KIOSK_ADB_AT_BOOT default "1"):
+# the IR app has no hidden enable gesture like SignaSteam's Diagnostics
+# screen, and adbd is the field-service path. Root still has the password
+# from vtlinux-image-kiosk.inc on the serial console.
 
 # Essential Qt5 packages for Widgets application
 QT5_PACKAGES = " \
@@ -88,10 +93,17 @@ CORE_PACKAGES = " \
 # the resistive-touch calibration stack, unused here (the chsc5xxx
 # controller reports absolute multitouch straight to evdev and Qt's
 # eglfs/linuxfb input plugin reads evdev directly).
+#
+# rail-5v: the shared kernel DT leaves the switched 5 V rail (CAN
+# transceiver supply) off through the boot, because closing that switch is
+# what browned the board out on a long 5 V cable (recipes-kernel/linux).
+# rail-5v.service turns it on once the system is up; without this package
+# can0 never gets a transceiver and the IR app sees no bus.
 HARDWARE_PACKAGES = " \
     hardwatchdog \
     hardwatchdog-script \
     udev-extraconf \
+    rail-5v \
 "
 
 # Vendor libraries. libvtcom-dev is a -dev package (headers and the

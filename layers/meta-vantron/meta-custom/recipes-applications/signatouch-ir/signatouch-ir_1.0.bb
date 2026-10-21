@@ -15,7 +15,8 @@ SRC_URI = "git://git@github.com/thermasol/SignaTouch_IR.git;protocol=ssh;branch=
           "
 # olivia_yocto is a descendant of the master commit this was previously
 # pinned to (592f3e6) - it's a superset, not a divergent branch.
-SRCREV_signatouchir = "e77538a44214499a70d7db67be881de1f084e494"
+# v1.0.1 - "SignaTouch IR 1.0.1" on olivia_yocto
+SRCREV_signatouchir = "5900f5d04997865ea6acb7f174adb44bb460c4c4"
 # ThermaCan master, shared with the signatouch recipe - one CAN library
 # revision across both products rather than a per-product pin.
 #
