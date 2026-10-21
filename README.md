@@ -157,6 +157,13 @@ value is never restored over it).
 `signatouch.service` sources `rotation.env` at unit start, which is why changing the orientation in the app
 reboots the device.
 
+The boot logo and splash follow the same setting. The script also writes `optargs_rotation=fbcon=rotate:3`
+into `/boot/image.env` (read by U-Boot and appended to the kernel command line; fbcon rotates its boot logo
+with the console, `CONFIG_FRAMEBUFFER_CONSOLE_ROTATION`) and `PSPLASH_ARGS=-a 90` into `/etc/psplash.env`
+(sourced by `psplash-start.service`). Both are counter-clockwise quarter turns, the same direction as Qt's
+rotation 90, so on a landscape unit the ThermaSol mark reads the right way up from the first frame. On
+portrait units both are empty. The IR image's own line in `image.env` (its boot logo selection) is preserved.
+
 ### Room temperature sensor
 
 The app reads a thermistor divider on ADC channel 0 via

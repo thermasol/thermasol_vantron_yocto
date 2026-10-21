@@ -25,7 +25,13 @@ Type=notify
 # the board via /sys/kernel/debug/dri/0/state: plane fb flips from the
 # SignaSteam framebuffer to the [fbcon] one at QUIT without -n, stays
 # with -n. Qt eglfs does its own KD_GRAPHICS switch, so nothing is lost.
-ExecStart=/usr/bin/psplash -n
+#
+# PSPLASH_ARGS comes from /etc/psplash.env, written by set-display-rotation.sh
+# (display-rotation recipe): "-a 90" on landscape units so the splash is
+# drawn the same way round as the boot logo and the app, empty otherwise.
+# The file is absent on a fresh image, which is portrait.
+EnvironmentFile=-/etc/psplash.env
+ExecStart=/usr/bin/psplash -n $PSPLASH_ARGS
 RemainAfterExit=yes
 Restart=on-failure
 RestartSec=1

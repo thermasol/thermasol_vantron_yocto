@@ -147,6 +147,13 @@ do_configure:prepend() {
     # to a VT to draw it. This is what shows the classic penguin logo.
     echo "CONFIG_FRAMEBUFFER_CONSOLE=y" >> ${WORKDIR}/defconfig
 
+    # fbcon=rotate:N on the command line rotates the console and, through
+    # fb_prepare_logo(), the boot logo with it. set-display-rotation.sh
+    # puts rotate:3 (counter-clockwise, matching Qt's 90) into
+    # /boot/image.env on landscape units so the logo reads the same way
+    # as the app that follows it.
+    echo "CONFIG_FRAMEBUFFER_CONSOLE_ROTATION=y" >> ${WORKDIR}/defconfig
+
     # Display chain built in, not as modules. Measured on-device: with
     # cdns-dsi, cdns-dphy, the ST7701 panel and pwm-bl as modules, fb0 did
     # not exist until ~13.9 s after kernel start. udev has to load them

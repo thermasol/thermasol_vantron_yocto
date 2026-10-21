@@ -21,6 +21,9 @@ optargs_image to optargs. An image that needs extra kernel arguments
 ships that file (vtlinux-image-signatouch-ir: logo.select=almostheaven
 so the shared kernel draws the product's own boot logo). Images without
 the file boot exactly as before; optargs_image defaults to empty.
+optargs_rotation is the second variable in that file, owned at runtime
+by set-display-rotation.sh: fbcon=rotate:3 on landscape units so the
+boot logo is drawn the same way round as the app.
   cpufreq.default_governor=ondemand
                                the kernel's defconfig default is
                                "performance"; with the A53 OPP table from
@@ -31,13 +34,14 @@ the file boot exactly as before; optargs_image defaults to empty.
 ---
 --- a/board/ti/am62lx/am62lx.env
 +++ b/board/ti/am62lx/am62lx.env
-@@ -30,6 +30,9 @@
+@@ -30,6 +30,10 @@
  
  name_kern=Image
  console=ttyS0,115200n8
 +optargs=vt.global_cursor_default=0 fbcon=logo-pos:center,logo-count:1 cpufreq.default_governor=ondemand
 +optargs_image=
-+importimageenv=if load ${devtype} ${bootpart} ${loadaddr} ${bootdir}/image.env; then env import -t ${loadaddr} ${filesize}; fi; setenv optargs ${optargs} ${optargs_image}
++optargs_rotation=
++importimageenv=if load ${devtype} ${bootpart} ${loadaddr} ${bootdir}/image.env; then env import -t ${loadaddr} ${filesize}; fi; setenv optargs ${optargs} ${optargs_image} ${optargs_rotation}
  args_all=setenv optargs ${optargs} earlycon=ns16550a,mmio32,0x02800000
  	${mtdparts}
  run_kern=booti ${loadaddr} ${rd_spec} ${fdtaddr}

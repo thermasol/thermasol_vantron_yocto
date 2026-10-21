@@ -81,6 +81,48 @@ fi
 echo "EGLFS KMS configuration updated: ${EGLFS_CONFIG_FILE}"
 echo "Rotation environment file updated: ${ROTATION_ENV_FILE}"
 
+# Boot logo and splash in the same orientation as the app. Both are drawn
+# before this script runs, so like rotation.env these files describe the
+# orientation for the *next* boot (the app runs this script, then reboots,
+# when the orientation changes).
+#
+#  - /boot/image.env is read by U-Boot (importimageenv) and its
+#    optargs_rotation value is appended to the kernel command line.
+#    fbcon=rotate:3 is a counter-clockwise quarter turn, the same as Qt's
+#    rotation 90 above (QT_QPA_EGLFS_ROTATION=90 puts the app's top edge
+#    on the panel's native left edge), and fbcon rotates the boot logo
+#    with the console. Only the optargs_rotation line is ours; any other
+#    line in the file (the IR image's optargs_image=logo.select=...) is
+#    kept.
+#  - /etc/psplash.env feeds PSPLASH_ARGS to psplash-start.service;
+#    psplash -a 90 is the same counter-clockwise turn.
+IMAGE_ENV_FILE="/boot/image.env"
+PSPLASH_ENV_FILE="/etc/psplash.env"
+if [ "${ROTATION}" = "90" ]; then
+    ROTATION_OPTARGS="fbcon=rotate:3"
+    PSPLASH_ARGS="-a 90"
+else
+    ROTATION_OPTARGS=""
+    PSPLASH_ARGS=""
+fi
+{
+    # grep exits 1 when it filters every line; under set -e that must not
+    # abort the app's ExecStartPre.
+    if [ -f "${IMAGE_ENV_FILE}" ]; then
+        grep -v '^optargs_rotation=' "${IMAGE_ENV_FILE}" || true
+    fi
+    if [ -n "${ROTATION_OPTARGS}" ]; then
+        echo "optargs_rotation=${ROTATION_OPTARGS}"
+    fi
+} > "${IMAGE_ENV_FILE}.tmp"
+if [ -s "${IMAGE_ENV_FILE}.tmp" ]; then
+    mv "${IMAGE_ENV_FILE}.tmp" "${IMAGE_ENV_FILE}"
+else
+    rm -f "${IMAGE_ENV_FILE}.tmp" "${IMAGE_ENV_FILE}"
+fi
+echo "PSPLASH_ARGS=${PSPLASH_ARGS}" > "${PSPLASH_ENV_FILE}"
+echo "Boot logo rotation: kernel '${ROTATION_OPTARGS:-none}', psplash '${PSPLASH_ARGS:-none}'"
+
 # Panel backlight level for the product. The panel is 0-255 and full scale
 # is brighter than wanted and draws more current than needed; 100 is the
 # level the whole image agrees on: the kernel DT default-brightness-level
