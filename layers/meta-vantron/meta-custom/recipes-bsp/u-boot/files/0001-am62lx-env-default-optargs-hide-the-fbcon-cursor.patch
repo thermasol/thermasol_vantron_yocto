@@ -13,6 +13,14 @@ comes up inside the kernel and fbcon draws the boot logo on the panel:
   fbcon=logo-count:1           one logo, not one per online CPU
 
 Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+
+Per-image additions: importimageenv (run first by bootcmd, see the
+bbappend) loads /boot/image.env from the rootfs partition - the same
+place the kernel Image is loaded from - and imports it, then appends
+optargs_image to optargs. An image that needs extra kernel arguments
+ships that file (vtlinux-image-signatouch-ir: logo.select=almostheaven
+so the shared kernel draws the product's own boot logo). Images without
+the file boot exactly as before; optargs_image defaults to empty.
   cpufreq.default_governor=ondemand
                                the kernel's defconfig default is
                                "performance"; with the A53 OPP table from
@@ -23,11 +31,13 @@ Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
 ---
 --- a/board/ti/am62lx/am62lx.env
 +++ b/board/ti/am62lx/am62lx.env
-@@ -30,6 +30,7 @@
+@@ -30,6 +30,9 @@
  
  name_kern=Image
  console=ttyS0,115200n8
 +optargs=vt.global_cursor_default=0 fbcon=logo-pos:center,logo-count:1 cpufreq.default_governor=ondemand
++optargs_image=
++importimageenv=if load ${devtype} ${bootpart} ${loadaddr} ${bootdir}/image.env; then env import -t ${loadaddr} ${filesize}; fi; setenv optargs ${optargs} ${optargs_image}
  args_all=setenv optargs ${optargs} earlycon=ns16550a,mmio32,0x02800000
  	${mtdparts}
  run_kern=booti ${loadaddr} ${rd_spec} ${fdtaddr}

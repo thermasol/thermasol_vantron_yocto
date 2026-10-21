@@ -1,0 +1,86 @@
+From: Eric Tanner <eric.tanner@harvia.com>
+Subject: [PATCH] video: logo: select a logo by name from the command line
+
+Two products share this kernel (vt-sbc-am62l) and each wants its own
+boot logo: fbcon draws the compiled-in logo ~1.5 s into the boot, well
+before psplash, so the kernel logo is the first thing on the panel.
+fb_find_logo() only ever picks by colour depth, so there was no way to
+have one kernel show different artwork per product.
+
+Add a "logo.select=<name>" parameter and a second compiled-in 224-colour
+logo, LOGO_ALMOSTHEAVEN_CLUT224 (drivers/video/logo/
+logo_almostheaven_clut224.ppm, shipped by the Yocto layer alongside the
+replaced logo_linux_clut224.ppm). With logo.select=almostheaven
+fb_find_logo() returns it; unset or anything else keeps the default
+logo_linux_clut224 path. The image that wants it sets the parameter
+through U-Boot (optargs_image in /boot/image.env).
+
+Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+---
+--- a/drivers/video/logo/logo.c	2026-10-21 11:19:48.461321112 -0500
++++ b/drivers/video/logo/logo.c	2026-10-21 11:21:47.376215314 -0500
+@@ -23,6 +23,16 @@
+ MODULE_PARM_DESC(nologo, "Disables startup logo");
+ 
+ /*
++ * Several products share one kernel but want their own boot logo. The
++ * extra logos are compiled in alongside the default and picked by name
++ * from the command line (logo.select=<name>); unset or unknown keeps the
++ * default selection below.
++ */
++static char *logo_select;
++module_param_named(select, logo_select, charp, 0);
++MODULE_PARM_DESC(select, "Boot logo to show, by name (e.g. almostheaven)");
++
++/*
+  * Logos are located in the initdata, and will be freed in kernel_init.
+  * Use late_init to mark the logos as freed to prevent any further use.
+  */
+@@ -100,6 +110,11 @@
+ 		/* SuperH Linux logo */
+ 		logo = &logo_superh_clut224;
+ #endif
++#ifdef CONFIG_LOGO_ALMOSTHEAVEN_CLUT224
++		/* Almost Heaven Saunas wordmark, logo.select=almostheaven */
++		if (logo_select && !strcmp(logo_select, "almostheaven"))
++			logo = &logo_almostheaven_clut224;
++#endif
+ 	}
+ 	return logo;
+ }
+--- a/drivers/video/logo/Kconfig	2026-10-21 11:19:48.462835832 -0500
++++ b/drivers/video/logo/Kconfig	2026-10-21 11:21:47.376533062 -0500
+@@ -30,6 +30,13 @@
+ 	bool "Standard 224-color Linux logo"
+ 	default y
+ 
++config LOGO_ALMOSTHEAVEN_CLUT224
++	bool "Almost Heaven Saunas 224-color logo (logo.select=almostheaven)"
++	default n
++	help
++	  Compiled in next to the default logo and shown instead of it when
++	  the kernel is booted with logo.select=almostheaven.
++
+ config LOGO_DEC_CLUT224
+ 	bool "224-color Digital Equipment Corporation Linux logo"
+ 	depends on MACH_DECSTATION || ALPHA
+--- a/drivers/video/logo/Makefile	2026-10-21 11:19:48.464713391 -0500
++++ b/drivers/video/logo/Makefile	2026-10-21 11:21:47.376739568 -0500
+@@ -5,6 +5,7 @@
+ obj-$(CONFIG_LOGO_LINUX_MONO)		+= logo_linux_mono.o
+ obj-$(CONFIG_LOGO_LINUX_VGA16)		+= logo_linux_vga16.o
+ obj-$(CONFIG_LOGO_LINUX_CLUT224)	+= logo_linux_clut224.o
++obj-$(CONFIG_LOGO_ALMOSTHEAVEN_CLUT224)	+= logo_almostheaven_clut224.o
+ obj-$(CONFIG_LOGO_DEC_CLUT224)		+= logo_dec_clut224.o
+ obj-$(CONFIG_LOGO_MAC_CLUT224)		+= logo_mac_clut224.o
+ obj-$(CONFIG_LOGO_PARISC_CLUT224)	+= logo_parisc_clut224.o
+--- a/include/linux/linux_logo.h	2026-10-21 11:19:48.466048921 -0500
++++ b/include/linux/linux_logo.h	2026-10-21 11:21:47.376896728 -0500
+@@ -33,6 +33,7 @@
+ extern const struct linux_logo logo_linux_mono;
+ extern const struct linux_logo logo_linux_vga16;
+ extern const struct linux_logo logo_linux_clut224;
++extern const struct linux_logo logo_almostheaven_clut224;
+ extern const struct linux_logo logo_dec_clut224;
+ extern const struct linux_logo logo_mac_clut224;
+ extern const struct linux_logo logo_parisc_clut224;

@@ -189,7 +189,7 @@ WKS_FILE = "${MACHINE}.wks.in"
 
 LICENSE_FLAGS_ACCEPTED += "commercial"
 
-IMAGE_PREPROCESS_COMMAND:append = "rootfs_versions;"
+IMAGE_PREPROCESS_COMMAND:append = " rootfs_versions ; "
 
 rootfs_versions () {
     echo ${IMAGE_VERSION} > ${IMAGE_ROOTFS}/etc/versions

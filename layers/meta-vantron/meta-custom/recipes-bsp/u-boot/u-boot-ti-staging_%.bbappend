@@ -34,10 +34,20 @@ SRC_URI += "file://0002-vt-sbc-am62l-dts-leave-the-wifi-bt-module-unpowered.patc
 # DFU and never touch this. Set "3" in site.conf for a bench build where
 # you want the prompt back (the hand-boot bisect in the kernel notes).
 UBOOT_BOOTDELAY ?= "-2"
+# Per-image kernel arguments. bootcmd first runs importimageenv (defined
+# in the env patch above): it loads /boot/image.env from the rootfs, the
+# partition the kernel Image comes from, imports it, and appends
+# optargs_image to optargs. The IR image ships that file with
+# logo.select=almostheaven so the shared kernel draws its own boot logo;
+# images without the file boot unchanged.
+UBOOT_BOOTCOMMAND = "run importimageenv;run args_mmc;run loadimage;run loadfdt;run run_kern;"
 do_configure:prepend() {
     sed -i 's/^CONFIG_BOOTDELAY=.*/CONFIG_BOOTDELAY=${UBOOT_BOOTDELAY}/' ${S}/configs/${UBOOT_MACHINE}
     grep -q '^CONFIG_BOOTDELAY=${UBOOT_BOOTDELAY}$' ${S}/configs/${UBOOT_MACHINE} || \
         bbfatal "CONFIG_BOOTDELAY not set in ${UBOOT_MACHINE}"
+    sed -i 's|^CONFIG_BOOTCOMMAND=.*|CONFIG_BOOTCOMMAND="${UBOOT_BOOTCOMMAND}"|' ${S}/configs/${UBOOT_MACHINE}
+    grep -q '^CONFIG_BOOTCOMMAND="${UBOOT_BOOTCOMMAND}"$' ${S}/configs/${UBOOT_MACHINE} || \
+        bbfatal "CONFIG_BOOTCOMMAND not set in ${UBOOT_MACHINE}"
 }
 
 PACKAGECONFIG[ap-trusted-rom] = "BL1=${S}/prebuilt-images/am62lxx-evm/bl1.bin,,trusted-firmware-a"

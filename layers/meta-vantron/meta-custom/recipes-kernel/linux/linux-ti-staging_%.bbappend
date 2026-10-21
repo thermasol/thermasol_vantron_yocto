@@ -82,6 +82,16 @@ SRC_URI += "file://0002-regulator-tps65219-fix-irq_data-allocation-size.patch"
 # it, logo-count:1 stops fbcon drawing one copy per CPU (two on this SoC).
 SRC_URI += "file://logo_linux_clut224.ppm"
 
+# Second product on the same kernel. The IR product must not show the
+# ThermaSol mark, so a second logo (Almost Heaven wordmark, white on
+# black, generated from recipes-core/psplash/files/signatouch-ir.png -
+# keep the two in step) is compiled in next to the default and picked at
+# boot with logo.select=almostheaven, which the IR image passes through
+# U-Boot via /boot/image.env (recipes-bsp/u-boot, vtlinux-image-
+# signatouch-ir). The patch adds the parameter and the Kconfig entry.
+SRC_URI += "file://0004-video-logo-select-a-logo-by-name-from-the-command-line.patch"
+SRC_URI += "file://logo_almostheaven_clut224.ppm"
+
 # Copied into the source tree from do_configure below (do_patch is a python
 # task in patch.bbclass, so it cannot take a shell append). The logo .c is
 # generated from the .ppm at compile time, so configure is early enough.
@@ -166,4 +176,8 @@ do_configure:prepend() {
 
     # ThermaSol boot logo - see the SRC_URI note above.
     cp ${WORKDIR}/logo_linux_clut224.ppm ${S}/drivers/video/logo/logo_linux_clut224.ppm
+
+    # Almost Heaven boot logo for the IR product (logo.select=almostheaven).
+    cp ${WORKDIR}/logo_almostheaven_clut224.ppm ${S}/drivers/video/logo/logo_almostheaven_clut224.ppm
+    echo "CONFIG_LOGO_ALMOSTHEAVEN_CLUT224=y" >> ${WORKDIR}/defconfig
 }

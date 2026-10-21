@@ -142,7 +142,18 @@ WKS_FILE = "${MACHINE}.wks.in"
 
 LICENSE_FLAGS_ACCEPTED += "commercial"
 
-IMAGE_PREPROCESS_COMMAND:append = "rootfs_versions;"
+IMAGE_PREPROCESS_COMMAND:append = " rootfs_versions ; "
+
+# Per-image kernel arguments, read by U-Boot (importimageenv in
+# recipes-bsp/u-boot) from the rootfs before the kernel is loaded. The
+# kernel is shared with the SignaTouch product and carries both boot
+# logos; this selects the Almost Heaven one so the panel never shows the
+# ThermaSol mark on an IR unit. psplash then draws the same artwork.
+ir_boot_image_env () {
+    install -d ${IMAGE_ROOTFS}/boot
+    printf 'optargs_image=logo.select=almostheaven\n' > ${IMAGE_ROOTFS}/boot/image.env
+}
+ROOTFS_POSTPROCESS_COMMAND += "ir_boot_image_env ; "
 
 rootfs_versions () {
     echo ${IMAGE_VERSION} > ${IMAGE_ROOTFS}/etc/versions

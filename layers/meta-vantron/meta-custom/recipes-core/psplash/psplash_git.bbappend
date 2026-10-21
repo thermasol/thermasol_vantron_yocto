@@ -12,8 +12,12 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 # the RDEPENDS in each app recipe, which is what ties artwork to product.
 #
 # Filenames here are the product, not the artwork: signatouch-ir.png is
-# the Almost Heaven Saunas logo that shipped as "yocto.png" before this
-# split. signatouch.png is the ThermaSol wordmark (tsol_logo_305x27.png
+# the Almost Heaven Saunas wordmark that shipped as "yocto.png" before
+# this split - re-rendered white on black (the original was a black
+# wordmark on transparency, invisible on the black background below; it
+# only ever showed on upstream's grey). The kernel boot logo for the IR
+# product (recipes-kernel/linux, logo_almostheaven_clut224.ppm) is made
+# from this file; keep them in step. signatouch.png is the ThermaSol wordmark (tsol_logo_305x27.png
 # flattened onto black and padded to 308x27 - psplash_fb_draw_image wraps a
 # row when dx*bytes_per_pixel reaches the 4-byte-aligned rowstride, so any
 # RGB image whose width is not a multiple of 4 is drawn as a diagonal smear;
