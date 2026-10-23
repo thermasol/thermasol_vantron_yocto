@@ -1,0 +1,1 @@
+../layers/meta-vantron/meta-custom/scripts/make-boot0.py

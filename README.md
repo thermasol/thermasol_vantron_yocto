@@ -107,7 +107,10 @@ against `mmcblk0` — the same image is used for both SD card and onboard eMMC o
 separate "SD" vs "eMMC" variant. Other formats (`.ext4`, `.ext4.gz`, `.tar.xz`, `.manifest`, SPDX SBOMs) land
 alongside it in the same directory.
 
-See `flash-tools/` for how to write the `.wic` to the board.
+See `flash-tools/` for how to write the `.wic` to the board. Two more files land next to it for the fastboot
+flash path (`flash-tools/README.md`): `...rootfs.wic.simg`, the same image as an Android sparse file, and
+`...boot0.img`, this build's tiboot3/tispl/u-boot.img laid out for the eMMC boot0 partition. The flasher
+U-Boot they are written with is a separate build, `bitbake u-boot-vt-flasher`, deployed under `vt-flasher/`.
 
 ## Building the SignaTouch image
 

@@ -1,0 +1,21 @@
+{
+  "_comment": "Copy this file to flash-station.config.json to override defaults. Delete any key you do not want to override. FlashMethod is fastboot (default) or dfu (the original 8-step sequence). Steps[] entries are matched on Alt+File; only WaitSec / XferSec / PostDelaySec / Critical can be overridden.",
+
+  "StationName": "FLASH-01",
+  "ProductName": "Signatouch AM62L",
+  "RequireOperatorId": true,
+  "RequireSerial": false,
+  "VerifyHashes": true,
+  "BeepOnResult": true,
+  "PollIntervalMs": 250,
+  "DeviceListTimeoutMs": 10000,
+  "FlashMethod": "fastboot",
+
+  "Steps": [
+    { "Alt": "bootloader", "File": "bin\\loader\\tiboot3.bin",        "WaitSec": 180, "XferSec": 120, "PostDelaySec": 5 },
+    { "Alt": "bootloader", "File": "bin\\loader\\tispl.bin",          "WaitSec": 90,  "XferSec": 120, "PostDelaySec": 0 },
+    { "Alt": "u-boot.img", "File": "bin\\loader\\u-boot-flasher.img", "WaitSec": 90,  "XferSec": 120, "PostDelaySec": 0 },
+    { "Alt": "mmc0boot0",  "File": "bin\\images\\boot0.img",          "WaitSec": 90,  "XferSec": 120, "PostDelaySec": 0 },
+    { "Alt": "mmc0",       "File": "bin\\images\\emmc.simg",          "WaitSec": 90,  "XferSec": 900, "PostDelaySec": 0 }
+  ]
+}

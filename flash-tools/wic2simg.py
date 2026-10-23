@@ -1,0 +1,1 @@
+../layers/meta-vantron/meta-custom/scripts/wic2simg.py

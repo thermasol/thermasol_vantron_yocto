@@ -295,13 +295,54 @@ IMAGE_LINGUAS = "en-us"
 #
 #    IMAGE_OVERHEAD_FACTOR 1.3 (poky default) sized the old rootfs at 934 MB
 #    for 634 MB of content - 300 MB of empty ext4 that has to be created,
-#    written into the .wic, and pushed over DFU on every flash. The app
-#    writes its state to the separate userfs partition, so the rootfs needs
-#    only enough slack for logs and journald. resize-helper.service grows
-#    the partition to fill the eMMC on first boot regardless.
+#    written into the .wic, and pushed over USB on every flash. The rootfs
+#    partition is never grown: resize-helper.service only extends the LAST
+#    partition (userfs) to fill the eMMC on first boot, so whatever slack
+#    the rootfs has, it has for the life of the unit. What lands on it at
+#    runtime is small - the app's QSettings file, systemd-coredump files
+#    (a few MB each), the Mesa shader cache; /var/log is volatile - so 64 MB
+#    of fixed headroom plus 10 % is comfortable. (wic adds no further
+#    overhead: the .wks passes --overhead-factor 1.0, see the note there.)
 # ---------------------------------------------------------------------------
 IMAGE_OVERHEAD_FACTOR = "1.1"
-IMAGE_ROOTFS_EXTRA_SPACE = "24576"
+IMAGE_ROOTFS_EXTRA_SPACE = "65536"
+
+# ---------------------------------------------------------------------------
+# 6b. Flashing artefacts
+#
+#    The Flash Station boots a fastboot-capable U-Boot over USB DFU (the
+#    u-boot-vt-flasher recipe) and then writes the eMMC with two fastboot
+#    commands - see flash-tools/README.md. Both inputs come from here:
+#
+#    - <image>.rootfs.wic.simg: the .wic as an Android sparse image, zero
+#      blocks left out (DONT_CARE). "fastboot flash mmc0 <file>" writes it
+#      to the user area from offset 0, GPT included, exactly where the DFU
+#      "emmc raw 0x0 0x0" alt put the raw .wic - but roughly half the bytes
+#      cross the USB, over bulk transfers instead of DFU's 4 KB control
+#      transfers.
+#    - <image>.boot0.img: tiboot3.bin, tispl.bin and u-boot.img from this
+#      build at the offsets the three DFU boot0 alts used, for one
+#      "fastboot flash mmc0boot0 <file>". Note that this is OUR R5/A53 SPL
+#      pair; the DFU station wrote Vantron's stock tiboot3/tispl to boot0
+#      and only u-boot.img from this build, so the SPL-side patches in
+#      recipes-bsp/u-boot never reached boot0 that way.
+# ---------------------------------------------------------------------------
+# :append, not +=: image_types.bbclass assigns CONVERSIONTYPES with "=" when
+# the image recipe inherits it, which is after this .inc has been read.
+CONVERSIONTYPES:append = " simg"
+CONVERSION_CMD:simg = "python3 ${META_CUSTOM_DIR}/scripts/wic2simg.py ${IMAGE_NAME}.${type} ${IMAGE_NAME}.${type}.simg"
+CONVERSION_DEPENDS_simg = ""
+IMAGE_FSTYPES += "wic.simg"
+
+vt_boot0_image () {
+    python3 ${META_CUSTOM_DIR}/scripts/make-boot0.py \
+        ${DEPLOY_DIR_IMAGE}/tiboot3.bin ${DEPLOY_DIR_IMAGE}/tispl.bin ${DEPLOY_DIR_IMAGE}/u-boot.img \
+        ${IMGDEPLOYDIR}/${IMAGE_NAME}.boot0.img
+    ln -sf ${IMAGE_NAME}.boot0.img ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.boot0.img
+}
+# do_image_wic already depends on the bootloader deploy (IMAGE_BOOT_FILES),
+# so tiboot3.bin, tispl.bin and u-boot.img are in DEPLOY_DIR_IMAGE by then.
+do_image_wic[postfuncs] += "vt_boot0_image"
 
 # ---------------------------------------------------------------------------
 # 7. Boot-time service trimming

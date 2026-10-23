@@ -1,7 +1,21 @@
 # short-description: Create SD card image with a boot partition
-
-part --source bootimg-partition --fstype=vfat --label boot --active --align 1024 --use-uuid --fixed-size 64M
-part / --source rootfs --fstype=ext4 --label root --align 1024 --use-uuid
+#
+# Every byte of this image is pushed over USB on each flash (DFU: ~6 MB/s,
+# fastboot: skips empty blocks but still writes what is there), so the
+# partitions are sized to their content, not to the eMMC. Only the last
+# partition (userfs) is grown to fill the device at first boot by
+# resize-helper.service; boot and root stay the size they are here.
+#
+# boot: tiboot3.bin, tispl.bin, u-boot.img and uEnv.txt, ~2.5 MB. Only the
+# SD-card boot path reads it (eMMC boots from boot0); 16 MB is plenty.
+#
+# root: bitbake's ROOTFS_SIZE already carries the slack for the rootfs
+# (IMAGE_OVERHEAD_FACTOR and IMAGE_ROOTFS_EXTRA_SPACE in
+# vtlinux-image-kiosk.inc). Without --overhead-factor 1.0 wic multiplies
+# that padded size by its own 1.3 default again: 304 MB of content became a
+# 470 MB partition with 175 MB free.
+part --source bootimg-partition --fstype=vfat --label boot --active --align 1024 --use-uuid --fixed-size 16M
+part / --source rootfs --fstype=ext4 --label root --align 1024 --use-uuid --overhead-factor 1.0
 part --source rawcopy --sourceparams="file=vtlinux-image-userfs-vtlinux-${MACHINE}.userfs.ext4" --ondisk mmcblk0 --fstype=ext4 --label userfs
 
 bootloader --ptable gpt
