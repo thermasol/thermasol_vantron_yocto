@@ -86,7 +86,7 @@ echo "Rotation environment file updated: ${ROTATION_ENV_FILE}"
 # orientation for the *next* boot (the app runs this script, then reboots,
 # when the orientation changes).
 #
-#  - /boot/image.env is read by U-Boot (importimageenv) and its
+#  - image.env is read by U-Boot (importimageenv) and its
 #    optargs_rotation value is appended to the kernel command line.
 #    fbcon=rotate:3 is a counter-clockwise quarter turn, the same as Qt's
 #    rotation 90 above (QT_QPA_EGLFS_ROTATION=90 puts the app's top edge
@@ -94,9 +94,18 @@ echo "Rotation environment file updated: ${ROTATION_ENV_FILE}"
 #    with the console. Only the optargs_rotation line is ours; any other
 #    line in the file (the IR image's optargs_image=logo.select=...) is
 #    kept.
+#
+#    U-Boot loads it from the ROOTFS partition's /boot directory
+#    (bootpart=0:2, bootdir=/boot - the same place the kernel Image comes
+#    from). At runtime mount-partitions.service has the vfat boot partition
+#    (mmcblk0p1: tiboot3.bin, tispl.bin, u-boot.img, uEnv.txt) mounted over
+#    /boot, so a plain write to /boot/image.env lands on the vfat, where
+#    U-Boot never looks (seen on a landscape unit: the file on the vfat,
+#    fbcon=rotate:3 absent from /proc/cmdline). The directory underneath
+#    is reached through a private bind mount of /.
 #  - /etc/psplash.env feeds PSPLASH_ARGS to psplash-start.service;
 #    psplash -a 90 is the same counter-clockwise turn.
-IMAGE_ENV_FILE="/boot/image.env"
+ROOTFS_VIEW="/run/display-rotation/rootfs"
 PSPLASH_ENV_FILE="/etc/psplash.env"
 if [ "${ROTATION}" = "90" ]; then
     ROTATION_OPTARGS="fbcon=rotate:3"
@@ -105,20 +114,34 @@ else
     ROTATION_OPTARGS=""
     PSPLASH_ARGS=""
 fi
-{
-    # grep exits 1 when it filters every line; under set -e that must not
-    # abort the app's ExecStartPre.
-    if [ -f "${IMAGE_ENV_FILE}" ]; then
-        grep -v '^optargs_rotation=' "${IMAGE_ENV_FILE}" || true
+mkdir -p "${ROOTFS_VIEW}"
+if mount --bind / "${ROOTFS_VIEW}"; then
+    IMAGE_ENV_FILE="${ROOTFS_VIEW}/boot/image.env"
+    {
+        # grep exits 1 when it filters every line; under set -e that must
+        # not abort the app's ExecStartPre.
+        if [ -f "${IMAGE_ENV_FILE}" ]; then
+            grep -v '^optargs_rotation=' "${IMAGE_ENV_FILE}" || true
+        fi
+        if [ -n "${ROTATION_OPTARGS}" ]; then
+            echo "optargs_rotation=${ROTATION_OPTARGS}"
+        fi
+    } > "${IMAGE_ENV_FILE}.tmp"
+    if [ -s "${IMAGE_ENV_FILE}.tmp" ]; then
+        mv "${IMAGE_ENV_FILE}.tmp" "${IMAGE_ENV_FILE}"
+    else
+        rm -f "${IMAGE_ENV_FILE}.tmp" "${IMAGE_ENV_FILE}"
     fi
-    if [ -n "${ROTATION_OPTARGS}" ]; then
-        echo "optargs_rotation=${ROTATION_OPTARGS}"
-    fi
-} > "${IMAGE_ENV_FILE}.tmp"
-if [ -s "${IMAGE_ENV_FILE}.tmp" ]; then
-    mv "${IMAGE_ENV_FILE}.tmp" "${IMAGE_ENV_FILE}"
+    sync
+    umount "${ROOTFS_VIEW}"
 else
-    rm -f "${IMAGE_ENV_FILE}.tmp" "${IMAGE_ENV_FILE}"
+    echo "Warning: cannot bind-mount / at ${ROOTFS_VIEW}; boot logo rotation not updated"
+fi
+rmdir "${ROOTFS_VIEW}" "${ROOTFS_VIEW%/*}" 2>/dev/null || true
+# A copy left on the vfat boot partition by the earlier version of this
+# script (which wrote through the mount) is dead weight - drop it.
+if grep -q ' /boot ' /proc/mounts; then
+    rm -f /boot/image.env
 fi
 echo "PSPLASH_ARGS=${PSPLASH_ARGS}" > "${PSPLASH_ENV_FILE}"
 echo "Boot logo rotation: kernel '${ROTATION_OPTARGS:-none}', psplash '${PSPLASH_ARGS:-none}'"

@@ -1,0 +1,43 @@
+From f3db9abebf7e1ea6bb929b05cb62cb7052414be0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tor=20Arne=20Vestb=C3=B8?= <tor.arne.vestbo@qt.io>
+Date: Mon, 10 Jan 2022 16:51:59 +0100
+Subject: [PATCH] eglfs: Unset shared raster compositing context before
+ deletion
+
+Backport to 5.15: without this, every top-level window created after the
+first one has been destroyed is set to share with a QOpenGLContext that
+QEglFSWindow::destroy() has already deleted (qt_gl_global_share_context()
+is never cleared). On vt-sbc-am62l the SignaSteam first-boot flow -
+orientation dialog, then setup wizard, then MainWindow, each a separate
+top-level window - hits that dangling pointer in
+QEglFSIntegration::createPlatformOpenGLContext (shareHandle() on freed
+memory) and dies with SIGSEGV the moment the wizard's Finish button is
+pressed. Whether the freed block has been reused by then decides between a
+crash and a silent read of stale memory, which is why it only showed on
+landscape units.
+
+Upstream-Status: Backport [Qt 6, f3db9abebf7e1ea6bb929b05cb62cb7052414be0]
+Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+
+Change-Id: Ib0f615c76ac62f1177e44faaa733e67014f4185d
+Reviewed-by: Laszlo Agocs <laszlo.agocs@qt.io>
+---
+ src/plugins/platforms/eglfs/api/qeglfswindow.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/plugins/platforms/eglfs/api/qeglfswindow.cpp b/src/plugins/platforms/eglfs/api/qeglfswindow.cpp
+index 9cd1f17f5fb..47f6d88e5cc 100644
+--- a/src/plugins/platforms/eglfs/api/qeglfswindow.cpp
++++ b/src/plugins/platforms/eglfs/api/qeglfswindow.cpp
+@@ -177,6 +177,8 @@ void QEglFSWindow::destroy()
+ 
+ #ifndef QT_NO_OPENGL
+         QOpenGLCompositor::destroy();
++        if (qt_gl_global_share_context() == m_rasterCompositingContext)
++            qt_gl_set_global_share_context(nullptr);
+         delete m_rasterCompositingContext;
+ #endif
+     }
+-- 
+2.43.0
+

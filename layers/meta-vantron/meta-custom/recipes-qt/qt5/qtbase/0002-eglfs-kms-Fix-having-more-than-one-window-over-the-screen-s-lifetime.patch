@@ -1,0 +1,76 @@
+From: Laszlo Agocs <laszlo.agocs@qt.io>
+Date: Mon, 4 Mar 2024 17:53:23 +0100
+Subject: [PATCH] eglfs/kms: Fix having more than one window over the screen's
+ lifetime
+
+Backport of two Qt 6 commits for QTBUG-122663, squashed and adapted to
+5.15 (where resetSurface() only cleared m_gbm_surface):
+
+  818f8de64a2b "drm: Fix having more than window over the screen's lifetime"
+  0a3b5042a566 "drm: atomic: Avoid device busy when flipping after creating
+                a new window"
+
+On the non-atomic path the framebuffer is bound to the CRTC once, by the
+drmModeSetCrtc in ensureModeSet(), and never again. When the window that
+owns the screen's gbm_surface is destroyed, the surface's buffer objects
+go with it and their DRM framebuffers are removed; the kernel then
+unbinds the primary plane (plane fb=0, CRTC still active). The next
+QWindow's first frame goes through drmModePageFlip against an unbound
+plane and gets -EBUSY, as does every frame after it: the panel stays
+black while the app keeps running. Seen on vt-sbc-am62l with the
+SignaSteam first-boot flow (setup wizard window, then MainWindow): the
+journal fills with "Could not queue DRM page flip on screen DSI1 (Device
+or resource busy)" from the moment MainWindow is shown.
+
+With this change resetSurface() asks for a fresh drmModeSetCrtc the next
+time a frame is flipped, which rebinds the plane to the new window's
+framebuffer. The m_flipPending/m_gbm_bo_current reset is the 5.15
+equivalent of the second commit's cleanup.
+
+Upstream-Status: Backport [Qt 6.5, 818f8de64a2b1a7371ecb4bdd527b05343190582 + 0a3b5042a566afa4dc5162f469eb0d8be3120933]
+Signed-off-by: Eric Tanner <eric.tanner@harvia.com>
+---
+--- a/src/plugins/platforms/eglfs/deviceintegration/eglfs_kms/qeglfskmsgbmscreen.cpp	2026-10-23 10:36:59.905098252 -0500
++++ b/src/plugins/platforms/eglfs/deviceintegration/eglfs_kms/qeglfskmsgbmscreen.cpp	2026-10-23 10:36:59.931616783 -0500
+@@ -196,7 +196,19 @@
+ 
+ void QEglFSKmsGbmScreen::resetSurface()
+ {
++    m_flipPending = false; // not necessarily true but enough to keep bo_next
++    m_gbm_bo_current = nullptr;
+     m_gbm_surface = nullptr;
++
++    // Leave m_gbm_bo_next untouched. waitForFlip() should
++    // still do its work, when called. Otherwise we end up
++    // in device-is-busy errors if there is a new QWindow
++    // created afterwards. (QTBUG-122663)
++
++    // If not using atomic, will need a new drmModeSetCrtc if a new window
++    // gets created later on (and so there's a new fb).
++    if (!device()->hasAtomicSupport())
++        needsNewModeSetForNextFb = true;
+ }
+ 
+ void QEglFSKmsGbmScreen::initCloning(QPlatformScreen *screenThisScreenClones,
+@@ -224,8 +236,9 @@
+     QKmsOutput &op(output());
+     const int fd = device()->fd();
+ 
+-    if (!op.mode_set) {
++    if (!op.mode_set || needsNewModeSetForNextFb) {
+         op.mode_set = true;
++        needsNewModeSetForNextFb = false;
+ 
+         bool doModeSet = true;
+         drmModeCrtcPtr currentMode = drmModeGetCrtc(fd, op.crtc_id);
+--- a/src/plugins/platforms/eglfs/deviceintegration/eglfs_kms/qeglfskmsgbmscreen.h	2026-10-23 10:36:59.913085804 -0500
++++ b/src/plugins/platforms/eglfs/deviceintegration/eglfs_kms/qeglfskmsgbmscreen.h	2026-10-23 10:36:59.932214145 -0500
+@@ -105,6 +105,8 @@
+         bool cloneFlipPending = false;
+     };
+     QVector<CloneDestination> m_cloneDests;
++
++    bool needsNewModeSetForNextFb = false;
+ };
+ 
+ QT_END_NAMESPACE

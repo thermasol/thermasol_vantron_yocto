@@ -158,11 +158,31 @@ value is never restored over it).
 reboots the device.
 
 The boot logo and splash follow the same setting. The script also writes `optargs_rotation=fbcon=rotate:3`
-into `/boot/image.env` (read by U-Boot and appended to the kernel command line; fbcon rotates its boot logo
-with the console, `CONFIG_FRAMEBUFFER_CONSOLE_ROTATION`) and `PSPLASH_ARGS=-a 90` into `/etc/psplash.env`
-(sourced by `psplash-start.service`). Both are counter-clockwise quarter turns, the same direction as Qt's
+into the rootfs's `/boot/image.env` (read by U-Boot from the rootfs partition, the same place the kernel
+Image is loaded from, and appended to the kernel command line; fbcon rotates its boot logo with the console,
+`CONFIG_FRAMEBUFFER_CONSOLE_ROTATION`) and `PSPLASH_ARGS=-a 90` into `/etc/psplash.env` (sourced by
+`psplash-start.service`). Note that at runtime `mount-partitions.service` has the vfat boot partition mounted
+over `/boot`, hiding that directory; the script reaches it through a bind mount of `/`, since a plain write
+to `/boot/image.env` lands on the vfat where U-Boot never looks. Both are counter-clockwise quarter turns, the same direction as Qt's
 rotation 90, so on a landscape unit the ThermaSol mark reads the right way up from the first frame. On
 portrait units both are empty. The IR image's own line in `image.env` (its boot logo selection) is preserved.
+
+#### Qt eglfs and successive top-level windows
+
+The first-boot flow is three top-level windows in a row (orientation dialog, setup wizard, MainWindow).
+Stock Qt 5.15 eglfs deletes the raster compositing context when the root window is destroyed but leaves
+`qt_gl_global_share_context()` pointing at it, so the next window shares with freed memory and the app
+segfaults in `QEglFSIntegration::createPlatformOpenGLContext` (seen as a crash on the wizard's Finish on
+landscape units; portrait only survived by heap-reuse luck). `recipes-qt/qt5/qtbase_%.bbappend` backports
+Qt's own fix (Qt 6 commit `f3db9abebf7e`, never applied to 5.15).
+
+The second problem in the same flow is in the `eglfs_kms` backend: the KMS mode, and with it the primary
+plane's framebuffer, is set once per screen. When the window that owns the screen's `gbm_surface` is
+destroyed its framebuffers are removed and the kernel unbinds the plane (CRTC active, `fb=0` in
+`/sys/kernel/debug/dri/0/state`). The next window's page flips all fail with `EBUSY` ("Could not queue DRM
+page flip on screen DSI1 (Device or resource busy)" in the journal) and the panel stays black while the app
+runs normally. The same bbappend backports Qt's QTBUG-122663 fix (Qt 6.5 commits `818f8de64a2b` and
+`0a3b5042a566`), which re-runs `drmModeSetCrtc` for the next window's first frame.
 
 ### Room temperature sensor
 
