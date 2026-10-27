@@ -15,8 +15,12 @@ SRC_URI = "git://git@github.com/thermasol/SignaTouch_IR.git;protocol=ssh;branch=
           "
 # olivia_yocto is a descendant of the master commit this was previously
 # pinned to (592f3e6) - it's a superset, not a divergent branch.
-# v1.0.1 - "SignaTouch IR 1.0.1" on olivia_yocto
-SRCREV_signatouchir = "5900f5d04997865ea6acb7f174adb44bb460c4c4"
+# v1.0.2 - "SignaTouch IR 1.0.2" (2026-10-27, tag v1.0.2, on both master and
+# olivia_yocto): the UI raises IR_POWER_BOX_NOT_CONNECTED when the power box
+# never reports heat within 20 s of power-on instead of sitting on "--", and
+# ignores the 0xFF room temperature the module sends before its first valid
+# reading (233b13e). v1.0.1 was 5900f5d04997865ea6acb7f174adb44bb460c4c4.
+SRCREV_signatouchir = "a2c084f1aaa722721dcf89d92f97f44e43a8ed51"
 # ThermaCan master, shared with the signatouch recipe - one CAN library
 # revision across both products rather than a per-product pin.
 #
